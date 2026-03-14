@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warung Mitra KDKMP</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #198754; --bg: #f8faf9; }
+        body { background-color: var(--bg); padding-bottom: 130px; font-family: 'Inter', sans-serif; color: #333; }
+        
+        .navbar-main { background-color: var(--primary); color: white; padding: 15px; position: sticky; top: 0; z-index: 1030; }
+        .brand-title { font-size: 1.1rem; font-weight: 800; margin: 0; }
+        .header-sticky { position: sticky; top: 54px; z-index: 1020; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .search-container { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; }
+        .search-box { background: #f1f3f2; border: none; border-radius: 10px; padding: 10px 15px 10px 50px; font-size: 0.9rem; }
+        .search-icon { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #888; font-size: 1.1rem; }
+
+        .nav-pills { display: flex; overflow-x: auto; flex-wrap: nowrap; padding: 10px 15px; gap: 8px; scrollbar-width: none; }
+        .nav-pills::-webkit-scrollbar { display: none; }
+        .nav-link { white-space: nowrap; border-radius: 8px !important; padding: 6px 16px !important; font-size: 0.8rem; font-weight: 600; color: #666; background: #fff; border: 1px solid #eee !important; transition: 0.2s; }
+        .nav-link.active { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
+
+        /* Card Produk yang lebih detail */
+        .product-item { background: white; border-radius: 12px; border: none; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .thumb-mini { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; }
+        .product-desc { font-size: 0.75rem; color: #777; line-height: 1.2; margin-top: 2px; }
+        .product-unit { font-size: 0.7rem; background: #eef5f1; color: var(--primary); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        
+        .qty-wrapper { background: #f8fcf9; border-radius: 8px; display: flex; align-items: center; border: 1px solid #e2eee7; padding: 2px; }
+        .btn-qty { width: 28px; height: 28px; border: none; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .qty-input { width: 32px; text-align: center; border: none; background: transparent; font-size: 0.9rem; font-weight: bold; }
+
+        .sticky-bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 20px; z-index: 1000; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 20px rgba(0,0,0,0.06); }
+        label.error { color: #dc3545; font-size: 0.7rem; font-weight: 600; margin-top: 4px; display: block; }
+        input.error, textarea.error { border-color: #dc3545 !important; background-color: #fffafa; }
+        #map { height: 180px; width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar-main d-flex justify-content-between align-items-center">
+        <h1 class="brand-title">Warung Mitra KDKMP</h1>
+        <i class="bi bi-person-circle fs-4"></i>
+    </div>
+
+    <div class="header-sticky">
+        <div class="search-container">
+            <div class="position-relative">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="searchInput" class="form-control search-box" placeholder="Cari beras, pupuk, atau cangkul...">
+            </div>
+        </div>
+        <ul class="nav nav-pills" id="pills-tab">
+            <li class="nav-item"><button class="nav-link active" onclick="filterData('Semua', this)">Semua</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="filterData('Sembako', this)">Sembako</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="filterData('Pupuk', this)">Pupuk</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="filterData('Alat Tani', this)">Alat Tani</button></li>
+        </ul>
+    </div>
+
+    <div class="container mt-3" id="product-list">
+        </div>
+
+    <div class="sticky-bottom-panel">
+        <div class="container d-flex align-items-center justify-content-between p-0">
+            <div>
+                <p class="text-muted mb-0" style="font-size: 0.7rem;">Total Belanja</p>
+                <span id="grand-total" class="fw-bold text-success" style="font-size: 1.2rem;">Rp 0</span>
+            </div>
+            <button class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btn-lanjut" disabled style="border-radius: 12px;">
+                Pesan Sekarang (<span id="count-items">0</span>)
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalIdentitas" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0">Lengkapi Data Pengantaran</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" style="font-size: 0.8rem;"></button>
+                    </div>
+                    
+                    <form id="formPesanan">
+                        <div class="mb-3 text-center">
+                            <label class="small fw-bold d-block mb-2 text-muted">Metode Pengambilan</label>
+                            <div class="btn-group w-100">
+                                <input type="radio" class="btn-check" name="metode" id="m_antar" value="antar" checked>
+                                <label class="btn btn-outline-success btn-sm" for="m_antar"><i class="bi bi-truck me-1"></i>Diantar</label>
+                                <input type="radio" class="btn-check" name="metode" id="m_ambil" value="ambil">
+                                <label class="btn btn-outline-success btn-sm" for="m_ambil"><i class="bi bi-shop me-1"></i>Ambil Sendiri</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="small fw-bold mb-1">Nama Lengkap</label>
+                            <input type="text" name="nama" class="form-control" placeholder="Nama Anda">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-1">No. WhatsApp</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">+62</span>
+                                <input type="number" name="whatsapp" class="form-control" placeholder="812xxx">
+                            </div>
+                        </div>
+
+                        <div id="section-alamat">
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-1">Alamat Lengkap / Patokan</label>
+                                <textarea name="alamat" id="cust-address" class="form-control" rows="2" placeholder="Contoh: Belakang Balai Desa, samping warung..."></textarea>
+                            </div>
+                            <div class="mb-1">
+                                <label class="small fw-bold text-success"><i class="bi bi-geo-alt-fill"></i> Tentukan Titik Map</label>
+                                <div id="map"></div>
+                                <input type="hidden" name="coords" id="cust-coords">
+                            </div>
+                        </div>
+
+                        <div id="alert-container"></div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3 shadow" id="btn-kirim">
+                            KONFIRMASI PESANAN
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+    <script>
+        // Data Produk dengan Deskripsi & Satuan
+        const products = [
+            { id: 1, name: "Beras Cianjur Pandan Wangi", price: 75000, cat: "Sembako", unit: "Pack 5kg", desc: "Kualitas premium, pulen dan harum.", img: "https://placehold.co/100x100?text=Beras" },
+            { id: 2, name: "Minyak Goreng Sawit", price: 34000, cat: "Sembako", unit: "Botol 2L", desc: "Jernih, tidak mudah hitam saat menggoreng.", img: "https://placehold.co/100x100?text=Minyak" },
+            { id: 3, name: "Pupuk Urea Subsidi", price: 120000, cat: "Pupuk", unit: "Karung 50kg", desc: "Mempercepat pertumbuhan vegetatif tanaman.", img: "https://placehold.co/100x100?text=Pupuk" },
+            { id: 4, name: "Cangkul Baja Tempa", price: 85000, cat: "Alat Tani", unit: "Pcs", desc: "Kuat, tajam, cocok untuk tanah keras.", img: "https://placehold.co/100x100?text=Cangkul" }
+        ];
+
+        let cart = {};
+        let currentCat = 'Semua', map, marker;
+
+        function renderProducts() {
+            const searchTerm = $('#searchInput').val().toLowerCase();
+            let html = '';
+            const filtered = products.filter(p => (currentCat === 'Semua' || p.cat === currentCat) && p.name.toLowerCase().includes(searchTerm));
+            
+            filtered.forEach(p => {
+                const qty = cart[p.id] || 0;
+                html += `
+                <div class="card product-item">
+                    <div class="card-body d-flex align-items-center p-2">
+                        <img src="${p.img}" class="thumb-mini me-3">
+                        <div class="flex-grow-1">
+                            <div class="small fw-bold mb-0">${p.name}</div>
+                            <div class="product-desc mb-1">${p.desc}</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-success small">Rp ${p.price.toLocaleString()}</span>
+                                <span class="product-unit">${p.unit}</span>
+                            </div>
+                        </div>
+                        <div class="qty-wrapper ms-2">
+                            <button class="btn-qty text-danger" onclick="changeQty(${p.id}, -1)">-</button>
+                            <input type="text" readonly class="qty-input" id="qty-${p.id}" value="${qty}">
+                            <button class="btn-qty text-success" onclick="changeQty(${p.id}, 1)">+</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            $('#product-list').html(html || '<p class="text-center mt-5 text-muted small">Barang tidak ditemukan</p>');
+        }
+
+        window.filterData = function(cat, element) {
+            currentCat = cat;
+            $('.nav-link').removeClass('active');
+            $(element).addClass('active');
+            renderProducts();
+        }
+
+        $('#searchInput').on('input', renderProducts);
+
+        window.changeQty = function(id, delta) {
+            cart[id] = Math.max(0, (cart[id] || 0) + delta);
+            $(`#qty-${id}`).val(cart[id]);
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            let total = 0, count = 0;
+            products.forEach(p => { if(cart[p.id]) { total += p.price * cart[p.id]; count += cart[p.id]; } });
+            $('#grand-total').text('Rp ' + total.toLocaleString());
+            $('#count-items').text(count);
+            $('#btn-lanjut').prop('disabled', count === 0);
+        }
+
+        // VALIDATION LOGIC
+        $(document).ready(function() {
+            $("#formPesanan").validate({
+                rules: {
+                    nama: { required: true, minlength: 3 },
+                    whatsapp: { required: true, number: true, minlength: 10 },
+                    alamat: { required: () => $("#m_antar").is(":checked") }
+                },
+                messages: {
+                    nama: "Tuliskan nama lengkap Anda",
+                    whatsapp: "No. WA wajib 10-13 digit",
+                    alamat: "Alamat diperlukan untuk kirim ke rumah"
+                },
+                submitHandler: function(form) {
+                    const alertHtml = `
+                        <div class="alert alert-success mt-3 shadow-sm d-flex align-items-center border-0" style="border-radius:10px; font-size:0.85rem;">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div>Pesanan dikirim! Kami akan hubungi via WA.</div>
+                        </div>
+                    `;
+                    $('#alert-container').html(alertHtml);
+                    $('#btn-kirim').prop('disabled', true).text('Sedang Memproses...');
+                    setTimeout(() => location.reload(), 3000);
+                }
+            });
+
+            $('input[name="metode"]').change(function() {
+                if(this.value === 'ambil') { $('#section-alamat').slideUp(); } 
+                else { $('#section-alamat').slideDown(() => map.invalidateSize()); }
+            });
+        });
+
+        // MAPS LOGIC
+        $('#modalIdentitas').on('shown.bs.modal', function () {
+            if (!map) {
+                let lat = -7.0051, lng = 110.4381;
+                map = L.map('map').setView([lat, lng], 16);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+                
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                        lat = pos.coords.latitude; lng = pos.coords.longitude;
+                        map.setView([lat, lng], 17); marker.setLatLng([lat, lng]);
+                        $('#cust-coords').val(`${lat}, ${lng}`);
+                    });
+                }
+                marker.on('dragend', () => { const p = marker.getLatLng(); $('#cust-coords').val(`${p.lat}, ${p.lng}`); });
+                map.on('click', (e) => { marker.setLatLng(e.latlng); $('#cust-coords').val(`${e.latlng.lat}, ${e.latlng.lng}`); });
+            } else { map.invalidateSize(); }
+        });
+
+        $('#btn-lanjut').click(() => new bootstrap.Modal('#modalIdentitas').show());
+        $(document).ready(() => renderProducts());
+    </script>
+</body>
+</html>
