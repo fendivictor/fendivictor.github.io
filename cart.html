@@ -14,70 +14,36 @@
         :root { --primary: #198754; --bg: #f8faf9; }
         body { background-color: var(--bg); padding-bottom: 120px; font-family: 'Inter', sans-serif; color: #333; }
         
-        /* Navbar */
-        .navbar-main {
-            background-color: var(--primary);
-            color: white;
-            padding: 15px;
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-        }
-        .brand-title { font-size: 1.1rem; font-weight: 800; margin: 0; letter-spacing: 0.5px; }
-
-        /* Header Sticky (Search & Tabs) */
-        .header-sticky {
-            position: sticky;
-            top: 54px; /* Adjust based on navbar height */
-            z-index: 1020;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        /* Navbar & Header */
+        .navbar-main { background-color: var(--primary); color: white; padding: 15px; position: sticky; top: 0; z-index: 1030; }
+        .brand-title { font-size: 1.1rem; font-weight: 800; margin: 0; }
+        .header-sticky { position: sticky; top: 54px; z-index: 1020; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .search-container { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; }
-        .search-box {
-            background: #f1f3f2;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 15px 10px 50px;
-            font-size: 0.9rem;
-        }
-        .search-icon { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); color: #888; }
+        .search-box { background: #f1f3f2; border: none; border-radius: 10px; padding: 10px 15px 10px 50px; font-size: 0.9rem; }
+        .search-icon { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #888; font-size: 1.1rem; }
 
-        /* Pills Category */
+        /* Tabs */
         .nav-pills { display: flex; overflow-x: auto; flex-wrap: nowrap; padding: 10px 15px; gap: 8px; scrollbar-width: none; }
         .nav-pills::-webkit-scrollbar { display: none; }
-        .nav-link {
-            white-space: nowrap;
-            border-radius: 8px !important;
-            padding: 6px 16px !important;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #666;
-            background: #fff;
-            border: 1px solid #eee !important;
-        }
-        .nav-link.active { background-color: var(--primary) !important; border-color: var(--primary) !important; color: white !important; }
+        .nav-link { white-space: nowrap; border-radius: 8px !important; padding: 6px 16px !important; font-size: 0.8rem; font-weight: 600; color: #666; background: #fff; border: 1px solid #eee !important; transition: 0.2s; }
+        .nav-link.active { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
 
-        /* Compact Cards */
+        /* List & Qty */
         .product-item { background: white; border-radius: 12px; border: none; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
         .thumb-mini { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; }
-        
-        /* Qty Control */
         .qty-wrapper { background: #f8fcf9; border-radius: 8px; display: flex; align-items: center; border: 1px solid #e2eee7; padding: 2px; }
         .btn-qty { width: 28px; height: 28px; border: none; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .qty-input { width: 32px; text-align: center; border: none; background: transparent; font-size: 0.9rem; font-weight: bold; }
 
-        /* Bottom Panel */
-        .sticky-bottom-panel { 
-            position: fixed; bottom: 0; left: 0; right: 0; 
-            background: white; padding: 15px 20px; z-index: 1000; 
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -8px 20px rgba(0,0,0,0.06);
-        }
+        .sticky-bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 20px; z-index: 1000; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 20px rgba(0,0,0,0.06); }
 
-        /* Map */
-        #map { height: 180px; width: 100%; border-radius: 10px; margin-top: 5px; }
-        .modal-body { max-height: 80vh; overflow-y: auto; }
+        /* Validation & Alerts */
+        label.error { color: #dc3545; font-size: 0.7rem; font-weight: 600; margin-top: 4px; display: block; }
+        input.error, textarea.error { border-color: #dc3545 !important; background-color: #fffafa; }
+        .alert-custom { font-size: 0.85rem; border-radius: 10px; margin-top: 15px; border: none; }
+
+        #map { height: 180px; width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid #eee; }
+        .modal-body { max-height: 85vh; overflow-y: auto; text-align: left; }
     </style>
 </head>
 <body>
@@ -91,14 +57,14 @@
         <div class="search-container">
             <div class="position-relative">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" id="searchInput" class="form-control search-box" placeholder="Cari beras, minyak, pupuk...">
+                <input type="text" id="searchInput" class="form-control search-box" placeholder="Cari di Warung Mitra...">
             </div>
         </div>
         <ul class="nav nav-pills" id="pills-tab">
-            <li class="nav-item"><button class="nav-link active" onclick="filterData('Semua')">Semua</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="filterData('Sembako')">Sembako</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="filterData('Pupuk')">Pupuk</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="filterData('Alat Tani')">Alat Tani</button></li>
+            <li class="nav-item"><button class="nav-link active" onclick="filterData('Semua', this)">Semua</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="filterData('Sembako', this)">Sembako</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="filterData('Pupuk', this)">Pupuk</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="filterData('Alat Tani', this)">Alat Tani</button></li>
         </ul>
     </div>
 
@@ -109,41 +75,66 @@
     <div class="sticky-bottom-panel">
         <div class="container d-flex align-items-center justify-content-between p-0">
             <div>
-                <p class="text-muted mb-0" style="font-size: 0.7rem;">Total Estimasi</p>
+                <p class="text-muted mb-0" style="font-size: 0.7rem;">Total Belanja</p>
                 <span id="grand-total" class="fw-bold text-success" style="font-size: 1.2rem;">Rp 0</span>
             </div>
             <button class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btn-lanjut" disabled style="border-radius: 12px;">
-                Pesan Sekarang (<span id="count-items">0</span>)
+                Pesan (<span id="count-items">0</span>)
             </button>
         </div>
     </div>
 
-    <div class="modal fade" id="modalIdentitas" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered mx-3">
+    <div class="modal fade" id="modalIdentitas" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 <div class="modal-body p-4">
-                    <h6 class="fw-bold mb-3 text-center">Data Pengantaran</h6>
-                    <div class="mb-2">
-                        <label class="small fw-bold mb-1">Nama Lengkap</label>
-                        <input type="text" id="cust-name" class="form-control" placeholder="Nama Anda">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0">Lengkapi Data Pesanan</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 0.8rem;"></button>
                     </div>
-                    <div class="mb-2">
-                        <label class="small fw-bold mb-1">No. WhatsApp</label>
-                        <div class="input-group">
-                            <span class="input-group-text">+62</span>
-                            <input type="number" id="cust-phone" class="form-control" placeholder="812xxx">
+                    
+                    <form id="formPesanan">
+                        <div class="mb-3 text-center">
+                            <label class="small fw-bold d-block mb-2 text-muted">Metode Pengambilan</label>
+                            <div class="btn-group w-100">
+                                <input type="radio" class="btn-check" name="metode" id="m_antar" value="antar" checked>
+                                <label class="btn btn-outline-success btn-sm" for="m_antar"><i class="bi bi-truck me-1"></i>Diantar</label>
+                                <input type="radio" class="btn-check" name="metode" id="m_ambil" value="ambil">
+                                <label class="btn btn-outline-success btn-sm" for="m_ambil"><i class="bi bi-shop me-1"></i>Ambil Sendiri</label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="small fw-bold mb-1">Alamat Lengkap / Patokan</label>
-                        <textarea id="cust-address" class="form-control" rows="2" placeholder="Contoh: Dusun II, RT 01 (Samping Masjid)"></textarea>
-                    </div>
-                    <div class="mb-1">
-                        <label class="small fw-bold text-success"><i class="bi bi-geo-alt-fill"></i> Pin Lokasi Rumah</label>
-                        <div id="map"></div>
-                        <input type="hidden" id="cust-coords">
-                    </div>
-                    <button class="btn btn-success w-100 fw-bold py-2 mt-3 shadow" id="btn-kirim">KIRIM PESANAN</button>
+
+                        <div class="mb-2">
+                            <label class="small fw-bold mb-1">Nama Lengkap</label>
+                            <input type="text" name="nama" class="form-control" placeholder="Nama Anda">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-1">No. WhatsApp</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">+62</span>
+                                <input type="number" name="whatsapp" class="form-control" placeholder="812xxx">
+                            </div>
+                        </div>
+
+                        <div id="section-alamat">
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-1">Alamat Lengkap / Patokan</label>
+                                <textarea name="alamat" id="cust-address" class="form-control" rows="2" placeholder="Contoh: Samping Mushola Al-Hidayah..."></textarea>
+                            </div>
+                            <div class="mb-1">
+                                <label class="small fw-bold text-success"><i class="bi bi-geo-alt-fill"></i> Pin Lokasi Pengiriman</label>
+                                <div id="map"></div>
+                                <input type="hidden" name="coords" id="cust-coords">
+                            </div>
+                        </div>
+
+                        <div id="alert-container"></div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3 shadow" id="btn-kirim">
+                            KONFIRMASI PESANAN
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -152,29 +143,24 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
     <script>
         const products = [
             { id: 1, name: "Beras Cianjur 5kg", price: 75000, cat: "Sembako", img: "https://placehold.co/100x100?text=Beras" },
             { id: 2, name: "Minyak Goreng 2L", price: 34000, cat: "Sembako", img: "https://placehold.co/100x100?text=Minyak" },
             { id: 3, name: "Pupuk Urea 5kg", price: 120000, cat: "Pupuk", img: "https://placehold.co/100x100?text=Pupuk" },
-            { id: 4, name: "Cangkul Baja Hitam", price: 85000, cat: "Alat Tani", img: "https://placehold.co/100x100?text=Cangkul" },
-            { id: 5, name: "Gula Pasir 1kg", price: 16500, cat: "Sembako", img: "https://placehold.co/100x100?text=Gula" }
+            { id: 4, name: "Cangkul Baja Hitam", price: 85000, cat: "Alat Tani", img: "https://placehold.co/100x100?text=Cangkul" }
         ];
 
         let cart = {};
-        let currentCat = 'Semua';
-        let map, marker;
+        let currentCat = 'Semua', map, marker;
 
         function renderProducts() {
             const searchTerm = $('#searchInput').val().toLowerCase();
             let html = '';
-            const filtered = products.filter(p => {
-                const matchCat = (currentCat === 'Semua' || p.cat === currentCat);
-                const matchSearch = p.name.toLowerCase().includes(searchTerm);
-                return matchCat && matchSearch;
-            });
-
+            const filtered = products.filter(p => (currentCat === 'Semua' || p.cat === currentCat) && p.name.toLowerCase().includes(searchTerm));
+            
             filtered.forEach(p => {
                 const qty = cart[p.id] || 0;
                 html += `
@@ -182,80 +168,101 @@
                     <div class="card-body d-flex align-items-center p-2">
                         <img src="${p.img}" class="thumb-mini me-3">
                         <div class="flex-grow-1">
-                            <div class="small fw-bold mb-0 text-truncate" style="max-width: 140px;">${p.name}</div>
+                            <div class="small fw-bold mb-0">${p.name}</div>
                             <div class="fw-bold text-success small">Rp ${p.price.toLocaleString()}</div>
                         </div>
                         <div class="qty-wrapper">
-                            <button class="btn-qty text-danger" onclick="changeQty(${p.id}, -1)"><i class="bi bi-dash"></i></button>
+                            <button class="btn-qty text-danger" onclick="changeQty(${p.id}, -1)">-</button>
                             <input type="text" readonly class="qty-input" id="qty-${p.id}" value="${qty}">
-                            <button class="btn-qty text-success" onclick="changeQty(${p.id}, 1)"><i class="bi bi-plus"></i></button>
+                            <button class="btn-qty text-success" onclick="changeQty(${p.id}, 1)">+</button>
                         </div>
                     </div>
                 </div>`;
             });
-            $('#product-list').html(html || '<p class="text-center mt-5 text-muted">Barang tidak ditemukan...</p>');
+            $('#product-list').html(html || '<p class="text-center mt-5 text-muted small">Barang tidak tersedia</p>');
         }
 
-        window.filterData = function(cat) {
+        window.filterData = function(cat, element) {
             currentCat = cat;
             $('.nav-link').removeClass('active');
-            $(event.target).addClass('active');
+            $(element).addClass('active');
             renderProducts();
         }
 
         $('#searchInput').on('input', renderProducts);
 
         window.changeQty = function(id, delta) {
-            let q = cart[id] || 0;
-            q += delta;
-            if (q < 0) q = 0;
-            cart[id] = q;
-            $(`#qty-${id}`).val(q);
+            cart[id] = Math.max(0, (cart[id] || 0) + delta);
+            $(`#qty-${id}`).val(cart[id]);
             calculateTotal();
         }
 
         function calculateTotal() {
             let total = 0, count = 0;
-            for (let id in cart) {
-                const p = products.find(prod => prod.id == id);
-                total += p.price * cart[id];
-                if(cart[id] > 0) count += cart[id];
-            }
+            products.forEach(p => { if(cart[p.id]) { total += p.price * cart[p.id]; count += cart[p.id]; } });
             $('#grand-total').text('Rp ' + total.toLocaleString());
             $('#count-items').text(count);
             $('#btn-lanjut').prop('disabled', count === 0);
         }
 
+        // VALIDATION LOGIC
+        $(document).ready(function() {
+            $("#formPesanan").validate({
+                rules: {
+                    nama: { required: true, minlength: 3 },
+                    whatsapp: { required: true, number: true, minlength: 10 },
+                    alamat: { required: () => $("#m_antar").is(":checked") }
+                },
+                messages: {
+                    nama: "Isi nama lengkap Anda",
+                    whatsapp: "Isi nomor WA yang valid",
+                    alamat: "Alamat wajib diisi untuk antar"
+                },
+                submitHandler: function(form) {
+                    // Alert Konsisten di Bawah Form
+                    const alertHtml = `
+                        <div class="alert alert-success alert-custom shadow-sm d-flex align-items-center" role="alert">
+                            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                            <div>Pesanan berhasil dikirim ke Admin Desa!</div>
+                        </div>
+                    `;
+                    $('#alert-container').html(alertHtml);
+                    $('#btn-kirim').prop('disabled', true).addClass('opacity-50').text('MENGIRIM...');
+                    
+                    // Reload setelah 3 detik
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                }
+            });
+
+            $('input[name="metode"]').change(function() {
+                if(this.value === 'ambil') { $('#section-alamat').slideUp(); } 
+                else { $('#section-alamat').slideDown(() => map.invalidateSize()); }
+            });
+        });
+
         // MAPS LOGIC
         $('#modalIdentitas').on('shown.bs.modal', function () {
             if (!map) {
-                const lat = -7.0051, lng = 110.4381; // Titik default
-                map = L.map('map').setView([lat, lng], 15);
+                let lat = -7.0051, lng = 110.4381;
+                map = L.map('map').setView([lat, lng], 16);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
                 marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-                $('#cust-coords').val(`${lat}, ${lng}`);
                 
-                marker.on('dragend', () => {
-                    const p = marker.getLatLng();
-                    $('#cust-coords').val(`${p.lat}, ${p.lng}`);
-                });
-                map.on('click', (e) => {
-                    marker.setLatLng(e.latlng);
-                    $('#cust-coords').val(`${e.latlng.lat}, ${e.latlng.lng}`);
-                });
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                        lat = pos.coords.latitude; lng = pos.coords.longitude;
+                        map.setView([lat, lng], 17); marker.setLatLng([lat, lng]);
+                        $('#cust-coords').val(`${lat}, ${lng}`);
+                    });
+                }
+                marker.on('dragend', () => { const p = marker.getLatLng(); $('#cust-coords').val(`${p.lat}, ${p.lng}`); });
+                map.on('click', (e) => { marker.setLatLng(e.latlng); $('#cust-coords').val(`${e.latlng.lat}, ${e.latlng.lng}`); });
             } else { map.invalidateSize(); }
         });
 
         $('#btn-lanjut').click(() => new bootstrap.Modal('#modalIdentitas').show());
-        
-        $('#btn-kirim').click(function() {
-            if(!$('#cust-name').val() || !$('#cust-phone').val() || !$('#cust-address').val()) {
-                return alert("Mohon lengkapi semua data!");
-            }
-            alert("Pesanan terkirim! Admin Warung Mitra akan segera menghubungi Anda.");
-            location.reload();
-        });
-
         $(document).ready(() => renderProducts());
     </script>
 </body>
