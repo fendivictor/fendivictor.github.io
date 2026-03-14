@@ -12,9 +12,8 @@
 
     <style>
         :root { --primary: #198754; --bg: #f8faf9; }
-        body { background-color: var(--bg); padding-bottom: 120px; font-family: 'Inter', sans-serif; color: #333; }
+        body { background-color: var(--bg); padding-bottom: 130px; font-family: 'Inter', sans-serif; color: #333; }
         
-        /* Navbar & Header */
         .navbar-main { background-color: var(--primary); color: white; padding: 15px; position: sticky; top: 0; z-index: 1030; }
         .brand-title { font-size: 1.1rem; font-weight: 800; margin: 0; }
         .header-sticky { position: sticky; top: 54px; z-index: 1020; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -22,28 +21,25 @@
         .search-box { background: #f1f3f2; border: none; border-radius: 10px; padding: 10px 15px 10px 50px; font-size: 0.9rem; }
         .search-icon { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #888; font-size: 1.1rem; }
 
-        /* Tabs */
         .nav-pills { display: flex; overflow-x: auto; flex-wrap: nowrap; padding: 10px 15px; gap: 8px; scrollbar-width: none; }
         .nav-pills::-webkit-scrollbar { display: none; }
         .nav-link { white-space: nowrap; border-radius: 8px !important; padding: 6px 16px !important; font-size: 0.8rem; font-weight: 600; color: #666; background: #fff; border: 1px solid #eee !important; transition: 0.2s; }
         .nav-link.active { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
 
-        /* List & Qty */
-        .product-item { background: white; border-radius: 12px; border: none; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
-        .thumb-mini { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; }
+        /* Card Produk yang lebih detail */
+        .product-item { background: white; border-radius: 12px; border: none; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .thumb-mini { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; }
+        .product-desc { font-size: 0.75rem; color: #777; line-height: 1.2; margin-top: 2px; }
+        .product-unit { font-size: 0.7rem; background: #eef5f1; color: var(--primary); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        
         .qty-wrapper { background: #f8fcf9; border-radius: 8px; display: flex; align-items: center; border: 1px solid #e2eee7; padding: 2px; }
         .btn-qty { width: 28px; height: 28px; border: none; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .qty-input { width: 32px; text-align: center; border: none; background: transparent; font-size: 0.9rem; font-weight: bold; }
 
         .sticky-bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 20px; z-index: 1000; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 20px rgba(0,0,0,0.06); }
-
-        /* Validation & Alerts */
         label.error { color: #dc3545; font-size: 0.7rem; font-weight: 600; margin-top: 4px; display: block; }
         input.error, textarea.error { border-color: #dc3545 !important; background-color: #fffafa; }
-        .alert-custom { font-size: 0.85rem; border-radius: 10px; margin-top: 15px; border: none; }
-
         #map { height: 180px; width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid #eee; }
-        .modal-body { max-height: 85vh; overflow-y: auto; text-align: left; }
     </style>
 </head>
 <body>
@@ -57,7 +53,7 @@
         <div class="search-container">
             <div class="position-relative">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" id="searchInput" class="form-control search-box" placeholder="Cari di Warung Mitra...">
+                <input type="text" id="searchInput" class="form-control search-box" placeholder="Cari beras, pupuk, atau cangkul...">
             </div>
         </div>
         <ul class="nav nav-pills" id="pills-tab">
@@ -68,9 +64,8 @@
         </ul>
     </div>
 
-    <div class="container mt-3">
-        <div id="product-list"></div>
-    </div>
+    <div class="container mt-3" id="product-list">
+        </div>
 
     <div class="sticky-bottom-panel">
         <div class="container d-flex align-items-center justify-content-between p-0">
@@ -79,7 +74,7 @@
                 <span id="grand-total" class="fw-bold text-success" style="font-size: 1.2rem;">Rp 0</span>
             </div>
             <button class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btn-lanjut" disabled style="border-radius: 12px;">
-                Pesan (<span id="count-items">0</span>)
+                Pesan Sekarang (<span id="count-items">0</span>)
             </button>
         </div>
     </div>
@@ -89,8 +84,8 @@
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 <div class="modal-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">Lengkapi Data Pesanan</h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 0.8rem;"></button>
+                        <h6 class="fw-bold mb-0">Lengkapi Data Pengantaran</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" style="font-size: 0.8rem;"></button>
                     </div>
                     
                     <form id="formPesanan">
@@ -120,10 +115,10 @@
                         <div id="section-alamat">
                             <div class="mb-3">
                                 <label class="small fw-bold mb-1">Alamat Lengkap / Patokan</label>
-                                <textarea name="alamat" id="cust-address" class="form-control" rows="2" placeholder="Contoh: Samping Mushola Al-Hidayah..."></textarea>
+                                <textarea name="alamat" id="cust-address" class="form-control" rows="2" placeholder="Contoh: Belakang Balai Desa, samping warung..."></textarea>
                             </div>
                             <div class="mb-1">
-                                <label class="small fw-bold text-success"><i class="bi bi-geo-alt-fill"></i> Pin Lokasi Pengiriman</label>
+                                <label class="small fw-bold text-success"><i class="bi bi-geo-alt-fill"></i> Tentukan Titik Map</label>
                                 <div id="map"></div>
                                 <input type="hidden" name="coords" id="cust-coords">
                             </div>
@@ -146,11 +141,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
     <script>
+        // Data Produk dengan Deskripsi & Satuan
         const products = [
-            { id: 1, name: "Beras Cianjur 5kg", price: 75000, cat: "Sembako", img: "https://placehold.co/100x100?text=Beras" },
-            { id: 2, name: "Minyak Goreng 2L", price: 34000, cat: "Sembako", img: "https://placehold.co/100x100?text=Minyak" },
-            { id: 3, name: "Pupuk Urea 5kg", price: 120000, cat: "Pupuk", img: "https://placehold.co/100x100?text=Pupuk" },
-            { id: 4, name: "Cangkul Baja Hitam", price: 85000, cat: "Alat Tani", img: "https://placehold.co/100x100?text=Cangkul" }
+            { id: 1, name: "Beras Cianjur Pandan Wangi", price: 75000, cat: "Sembako", unit: "Pack 5kg", desc: "Kualitas premium, pulen dan harum.", img: "https://placehold.co/100x100?text=Beras" },
+            { id: 2, name: "Minyak Goreng Sawit", price: 34000, cat: "Sembako", unit: "Botol 2L", desc: "Jernih, tidak mudah hitam saat menggoreng.", img: "https://placehold.co/100x100?text=Minyak" },
+            { id: 3, name: "Pupuk Urea Subsidi", price: 120000, cat: "Pupuk", unit: "Karung 50kg", desc: "Mempercepat pertumbuhan vegetatif tanaman.", img: "https://placehold.co/100x100?text=Pupuk" },
+            { id: 4, name: "Cangkul Baja Tempa", price: 85000, cat: "Alat Tani", unit: "Pcs", desc: "Kuat, tajam, cocok untuk tanah keras.", img: "https://placehold.co/100x100?text=Cangkul" }
         ];
 
         let cart = {};
@@ -169,9 +165,13 @@
                         <img src="${p.img}" class="thumb-mini me-3">
                         <div class="flex-grow-1">
                             <div class="small fw-bold mb-0">${p.name}</div>
-                            <div class="fw-bold text-success small">Rp ${p.price.toLocaleString()}</div>
+                            <div class="product-desc mb-1">${p.desc}</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-success small">Rp ${p.price.toLocaleString()}</span>
+                                <span class="product-unit">${p.unit}</span>
+                            </div>
                         </div>
-                        <div class="qty-wrapper">
+                        <div class="qty-wrapper ms-2">
                             <button class="btn-qty text-danger" onclick="changeQty(${p.id}, -1)">-</button>
                             <input type="text" readonly class="qty-input" id="qty-${p.id}" value="${qty}">
                             <button class="btn-qty text-success" onclick="changeQty(${p.id}, 1)">+</button>
@@ -179,7 +179,7 @@
                     </div>
                 </div>`;
             });
-            $('#product-list').html(html || '<p class="text-center mt-5 text-muted small">Barang tidak tersedia</p>');
+            $('#product-list').html(html || '<p class="text-center mt-5 text-muted small">Barang tidak ditemukan</p>');
         }
 
         window.filterData = function(cat, element) {
@@ -214,25 +214,20 @@
                     alamat: { required: () => $("#m_antar").is(":checked") }
                 },
                 messages: {
-                    nama: "Isi nama lengkap Anda",
-                    whatsapp: "Isi nomor WA yang valid",
-                    alamat: "Alamat wajib diisi untuk antar"
+                    nama: "Tuliskan nama lengkap Anda",
+                    whatsapp: "No. WA wajib 10-13 digit",
+                    alamat: "Alamat diperlukan untuk kirim ke rumah"
                 },
                 submitHandler: function(form) {
-                    // Alert Konsisten di Bawah Form
                     const alertHtml = `
-                        <div class="alert alert-success alert-custom shadow-sm d-flex align-items-center" role="alert">
-                            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                            <div>Pesanan berhasil dikirim ke Admin Desa!</div>
+                        <div class="alert alert-success mt-3 shadow-sm d-flex align-items-center border-0" style="border-radius:10px; font-size:0.85rem;">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div>Pesanan dikirim! Kami akan hubungi via WA.</div>
                         </div>
                     `;
                     $('#alert-container').html(alertHtml);
-                    $('#btn-kirim').prop('disabled', true).addClass('opacity-50').text('MENGIRIM...');
-                    
-                    // Reload setelah 3 detik
-                    setTimeout(() => {
-                        location.reload();
-                    }, 3000);
+                    $('#btn-kirim').prop('disabled', true).text('Sedang Memproses...');
+                    setTimeout(() => location.reload(), 3000);
                 }
             });
 
