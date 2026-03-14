@@ -9,64 +9,133 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --primary: #198754; --bg: #f8faf9; }
-        body { background-color: var(--bg); padding-bottom: 130px; font-family: 'Inter', sans-serif; color: #333; }
-        .navbar-main { background-color: var(--primary); color: white; padding: 15px; position: sticky; top: 0; z-index: 1030; }
-        .brand-title { font-size: 1.1rem; font-weight: 800; margin: 0; }
-        .header-sticky { position: sticky; top: 54px; z-index: 1020; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .search-container { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; }
-        .search-box { background: #f1f3f2; border: none; border-radius: 10px; padding: 10px 15px 10px 50px; font-size: 0.9rem; }
-        .search-icon { position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: #888; }
-        .nav-pills { display: flex; overflow-x: auto; flex-wrap: nowrap; padding: 10px 15px; gap: 8px; scrollbar-width: none; }
-        .nav-pills::-webkit-scrollbar { display: none; }
-        .nav-link { white-space: nowrap; border-radius: 8px !important; padding: 6px 16px !important; font-size: 0.8rem; font-weight: 600; color: #666; background: #fff; border: 1px solid #eee !important; }
+        :root { --primary: #198754; --bg: #f8faf9; --card: #ffffff; }
+        [data-bs-theme="dark"] { --bg: #121212; --card: #1e1e1e; }
+
+        body { background-color: var(--bg); padding-bottom: 130px; font-family: 'Inter', sans-serif; transition: 0.3s; }
+        .navbar-main { background-color: var(--primary); color: white; padding: 12px 15px; position: sticky; top: 0; z-index: 1030; }
+        
+        .header-sticky { position: sticky; top: 54px; z-index: 1020; background: var(--card); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .nav-link { white-space: nowrap; border-radius: 8px !important; font-size: 0.8rem; font-weight: 600; color: #666; background: var(--card); border: 1px solid #eee !important; margin-right: 8px; }
         .nav-link.active { background-color: var(--primary) !important; color: white !important; }
-        .product-item { background: white; border-radius: 12px; border: none; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .thumb-mini { width: 75px; height: 75px; border-radius: 10px; object-fit: cover; }
-        .qty-wrapper { background: #f8fcf9; border-radius: 8px; display: flex; align-items: center; border: 1px solid #e2eee7; padding: 2px; }
-        .btn-qty { width: 28px; height: 28px; border: none; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: bold; }
-        .qty-input { width: 30px; text-align: center; border: none; background: transparent; font-size: 0.9rem; font-weight: bold; }
-        .sticky-bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px 20px; z-index: 1000; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 20px rgba(0,0,0,0.06); }
-        .error-message { display: block; width: 100%; margin-top: 0.25rem; font-size: 0.7rem; color: #dc3545; font-weight: 600; }
-        #map { height: 180px; width: 100%; border-radius: 10px; margin-top: 5px; border: 1px solid #eee; }
+        
+        .product-item { background: var(--card); border-radius: 15px; border: none; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; }
+        .thumb-mini { width: 85px; height: 85px; object-fit: cover; border-radius: 12px; }
+        
+        .qty-wrapper { background: #f8fcf9; border-radius: 10px; display: flex; align-items: center; border: 1px solid #e2eee7; padding: 2px; }
+        .btn-qty { width: 30px; height: 30px; border: none; background: white; border-radius: 8px; font-weight: bold; }
+        
+        .sticky-bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px 20px; z-index: 1000; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 20px rgba(0,0,0,0.08); }
+        #map { height: 180px; width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid #eee; }
+
+        /* Tombol Ganti Desa yang Menarik Perhatian */
+        .btn-ganti-desa {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+        .btn-ganti-desa:hover { background: white; color: var(--primary); }
+
+        /* Kategori yang Lebih Besar & Nyaman Ditekan */
+        .nav-pills-custom {
+            display: flex;
+            overflow-x: auto;
+            padding: 15px;
+            gap: 12px;
+            scrollbar-width: none;
+        }
+        .nav-pills-custom::-webkit-scrollbar { display: none; }
+
+        .cat-link {
+            white-space: nowrap;
+            border-radius: 15px !important;
+            padding: 12px 24px !important; /* Ukuran lebih besar */
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #444;
+            background: var(--card);
+            border: 2px solid #eee !important; /* Border lebih tebal */
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .cat-link.active {
+            background-color: var(--primary) !important;
+            color: white !important;
+            border-color: var(--primary) !important;
+            transform: scale(1.05); /* Efek sedikit membesar saat aktif */
+        }
     </style>
 </head>
 <body>
 
-    <div class="navbar-main d-flex justify-content-between align-items-center">
-        <h1 class="brand-title">Warung Mitra KDKMP</h1>
-        <i class="bi bi-person-circle fs-4"></i>
+    <div class="modal fade" id="modalPilihDesa" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+                <div class="modal-body text-center p-4">
+                    <div class="bg-success-subtle d-inline-block p-3 rounded-circle mb-3">
+                        <i class="bi bi-geo-alt-fill text-success fs-1"></i>
+                    </div>
+                    <h5 class="fw-800">Selamat Datang</h5>
+                    <p class="text-muted small">Silakan pilih lokasi desa Anda untuk mulai berbelanja di mitra terdekat.</p>
+                    <select id="select-desa" class="form-select form-select-lg mb-3 rounded-3" style="font-size: 1rem;">
+                        <option value="" selected disabled>Memuat desa...</option>
+                    </select>
+                    <button class="btn btn-success btn-lg w-100 rounded-3 fw-bold" onclick="setDesa()">MULAI BELANJA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <div class="navbar-main d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="bg-white rounded-circle p-2 me-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-shop text-success fs-5"></i>
+            </div>
+            <div>
+                <h1 class="brand-title mb-0" style="font-size: 1.1rem; font-weight: 800;">Warung KDKMP</h1>
+                <div class="d-flex align-items-center mt-1">
+                    <i class="bi bi-geo-alt-fill text-white-50 me-1" style="font-size: 0.7rem;"></i>
+                    <span id="display-desa" class="text-white fw-bold" style="font-size: 0.75rem;">...</span>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-ganti-desa d-flex align-items-center gap-1" onclick="resetDesa()">
+            <i class="bi bi-arrow-repeat"></i> Ganti Desa
+        </button>
     </div>
 
     <div class="header-sticky">
-        <div class="search-container">
+        <div class="p-3 pb-0">
             <div class="position-relative">
-                <i class="bi bi-search search-icon"></i>
-                <input type="text" id="searchInput" class="form-control search-box" placeholder="Cari di warung...">
+                <i class="bi bi-search position-absolute" style="left: 15px; top: 12px; color: #888;"></i>
+                <input type="text" id="searchInput" class="form-control border-0 ps-5 py-2" placeholder="Cari beras, pupuk, dll..." style="background: #f1f3f2; border-radius: 12px; font-size: 0.95rem;">
             </div>
         </div>
-        <ul class="nav nav-pills" id="pills-tab">
-            <li class="nav-item"><button class="nav-link active" onclick="filterData('Semua', this)">Semua</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="filterData('Sembako', this)">Sembako</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="filterData('Pupuk', this)">Pupuk</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="filterData('Alat Tani', this)">Alat Tani</button></li>
-        </ul>
+        <div class="nav-pills-custom" id="pills-tab">
+            <button class="cat-link active" onclick="filterCat('Semua', this)">🛍️ Semua</button>
+            <button class="cat-link" onclick="filterCat('Sembako', this)">🍚 Sembako</button>
+            <button class="cat-link" onclick="filterCat('Pupuk', this)">🌱 Pupuk</button>
+            <button class="cat-link" onclick="filterCat('Alat Tani', this)">🛠️ Alat Tani</button>
+        </div>
     </div>
 
     <div class="container mt-3" id="product-list">
-        <div class="text-center py-5">
-            <div class="spinner-border text-success" role="status"></div>
-            <p class="small text-muted mt-2">Memuat produk...</p>
         </div>
-    </div>
 
     <div class="sticky-bottom-panel">
-        <div class="container d-flex align-items-center justify-content-between p-0">
+        <div class="d-flex align-items-center justify-content-between">
             <div>
-                <p class="text-muted mb-0" style="font-size: 0.7rem;">Total Estimasi</p>
-                <span id="grand-total" class="fw-bold text-success" style="font-size: 1.2rem;">Rp 0</span>
+                <p class="text-muted mb-0 small">Estimasi Total</p>
+                <span id="grand-total" class="fw-800 text-success fs-4">Rp 0</span>
             </div>
             <button class="btn btn-success px-4 py-2 fw-bold" id="btn-lanjut" disabled style="border-radius: 12px;">
                 Pesan (<span id="count-items">0</span>)
@@ -74,38 +143,49 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalIdentitas" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+    <div class="modal fade" id="modalIdentitas" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered"> <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
                 <div class="modal-body p-4">
-                    <h6 class="fw-bold mb-3">Data Pengiriman</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-800 mb-0">Detail Pengiriman</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
                     <form id="formPesanan">
-                        <div class="mb-3 text-center">
-                            <div class="btn-group w-100">
+                        <div class="mb-3">
+                            <div class="btn-group w-100" role="group">
                                 <input type="radio" class="btn-check" name="metode" id="m_antar" value="antar" checked>
-                                <label class="btn btn-outline-success btn-sm" for="m_antar">Diantar</label>
+                                <label class="btn btn-outline-success fw-bold py-2" for="m_antar">🛵 Diantar</label>
+                                
                                 <input type="radio" class="btn-check" name="metode" id="m_ambil" value="ambil">
-                                <label class="btn btn-outline-success btn-sm" for="m_ambil">Ambil Sendiri</label>
+                                <label class="btn btn-outline-success fw-bold py-2" for="m_ambil">🏠 Ambil Sendiri</label>
                             </div>
                         </div>
+
                         <div class="mb-2">
-                            <label class="small fw-bold mb-1">Nama</label>
-                            <input type="text" name="nama" class="form-control" placeholder="Nama lengkap">
+                            <label class="small fw-bold mb-1">Nama Penerima</label>
+                            <input type="text" name="nama" class="form-control rounded-3" placeholder="Contoh: Pak Budi" required>
                         </div>
-                        <div class="mb-2">
-                            <label class="small fw-bold mb-1">WhatsApp</label>
-                            <input type="number" name="whatsapp" class="form-control" placeholder="0812...">
+
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-1">No. WhatsApp</label>
+                            <input type="number" name="whatsapp" class="form-control rounded-3" placeholder="0812345678" required>
                         </div>
-                        <div id="section-alamat">
-                            <div class="mb-2">
-                                <label class="small fw-bold mb-1">Alamat/Patokan</label>
-                                <textarea name="alamat" id="cust-address" class="form-control" rows="2" placeholder="Detail lokasi..."></textarea>
-                            </div>
-                            <div id="map"></div>
+                        
+                        <div id="section-lokasi">
+                            <label class="small fw-bold mb-1">Titik Lokasi Pengiriman</label>
+                            <div id="map" style="height: 200px; border-radius: 15px; border: 2px solid #eee;"></div>
                             <input type="hidden" name="coords" id="cust-coords">
+                            
+                            <div class="mt-2">
+                                <label class="small fw-bold mb-1">Detail Alamat / Patokan</label>
+                                <textarea name="alamat" class="form-control rounded-3" placeholder="Misal: Samping Mushola Al-Ikhlas, Pagar Biru" rows="2"></textarea>
+                            </div>
                         </div>
-                        <div id="alert-container"></div>
-                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3" id="btn-kirim">KONFIRMASI</button>
+                        
+                        <button type="submit" class="btn btn-success w-100 fw-800 py-3 mt-4 shadow-sm" style="border-radius: 15px;" id="btn-kirim">
+                            KONFIRMASI PESANAN
+                        </button>
                     </form>
                 </div>
             </div>
@@ -115,139 +195,167 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // 1. Inisialisasi Supabase 
-        const supabaseUrl = 'https://fsbtlscplnmdyomtesal.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w';
-        const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const sb = window.supabase.createClient('https://fsbtlscplnmdyomtesal.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w');
 
-        let products = [];
-        let cart = {};
-        let currentCat = 'Semua', map, marker;
+        let products = [], cart = {}, currentCat = 'Semua', map, marker;
+        let selectedDesa = localStorage.getItem('user_desa');
 
-        // 2. Ambil Data dari Supabase
-        async function fetchProducts() {
-            const { data, error } = await sb.from('products').select('*');
-            if (error) {
-                console.error('Error fetching products:', error);
-                $('#product-list').html('<p class="text-center mt-5">Gagal memuat data produk.</p>');
-                return;
+        async function init() {
+            // Load Desas for Modal
+            const { data: desas } = await sb.from('desas').select('id, nama_desa');
+            let opt = '<option value="" disabled selected>Pilih Nama Desa...</option>';
+            desas.forEach(d => opt += `<option value="${d.id}">${d.nama_desa}</option>`);
+            $('#select-desa').html(opt);
+
+            if (!selectedDesa) {
+                new bootstrap.Modal('#modalPilihDesa').show();
+            } else {
+                $('#display-desa').text('Mitra: ' + selectedDesa);
+                fetchProducts();
             }
-            products = data;
+        }
+
+        function setDesa() {
+            const val = $('#select-desa').val();
+            if(!val) return;
+            selectedDesa = val;
+            localStorage.setItem('user_desa', val);
+            location.reload();
+        }
+
+        async function fetchProducts() {
+            const { data } = await sb.from('products').select('*').eq('desa_id', selectedDesa);
+            products = data || [];
             renderProducts();
         }
 
         function renderProducts() {
-            const searchTerm = $('#searchInput').val().toLowerCase();
+            const search = $('#searchInput').val().toLowerCase();
             let html = '';
-            const filtered = products.filter(p => (currentCat === 'Semua' || p.category === currentCat) && p.name.toLowerCase().includes(searchTerm));
-            
-            filtered.forEach(p => {
+            products.filter(p => (currentCat === 'Semua' || p.category === currentCat) && p.name.toLowerCase().includes(search)).forEach(p => {
                 const qty = cart[p.id] || 0;
-                html += `
-                <div class="card product-item">
-                    <div class="card-body d-flex align-items-center p-2">
-                        <img src="${p.image_url}" class="thumb-mini me-3">
-                        <div class="flex-grow-1">
-                            <div class="small fw-bold mb-0">${p.name}</div>
-                            <div class="small text-muted mb-1" style="font-size:0.7rem">${p.description}</div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="fw-bold text-success small">Rp ${p.price.toLocaleString()}</span>
-                                <span class="badge bg-light text-success border" style="font-size:0.6rem">${p.unit}</span>
-                            </div>
-                        </div>
-                        <div class="qty-wrapper">
-                            <button class="btn-qty text-danger" onclick="changeQty(${p.id}, -1)">-</button>
-                            <input type="text" readonly class="qty-input" id="qty-${p.id}" value="${qty}">
-                            <button class="btn-qty text-success" onclick="changeQty(${p.id}, 1)">+</button>
-                        </div>
+                html += `<div class="card product-item p-2"><div class="d-flex align-items-center">
+                    <img src="${p.image_url}" class="thumb-mini me-3">
+                    <div class="flex-grow-1"><div class="fw-bold small">${p.name}</div><div class="text-success fw-800 small">Rp ${p.price.toLocaleString()}</div></div>
+                    <div class="qty-wrapper">
+                        <button class="btn-qty" onclick="changeQty('${p.id}', -1)">-</button>
+                        <input type="text" readonly class="text-center border-0 fw-bold" style="width:30px; background:transparent" value="${qty}" id="q-${p.id}">
+                        <button class="btn-qty" onclick="changeQty('${p.id}', 1)">+</button>
                     </div>
-                </div>`;
+                </div></div>`;
             });
-            $('#product-list').html(html || '<p class="text-center mt-5 text-muted small">Produk tidak ditemukan</p>');
+            $('#product-list').html(html || '<div class="text-center py-5 opacity-50 small">Produk belum tersedia di desa ini</div>');
         }
-
-        window.filterData = (cat, el) => { currentCat = cat; $('.nav-link').removeClass('active'); $(el).addClass('active'); renderProducts(); }
-        $('#searchInput').on('input', renderProducts);
 
         window.changeQty = (id, delta) => {
             cart[id] = Math.max(0, (cart[id] || 0) + delta);
-            $(`#qty-${id}`).val(cart[id]);
-            calculateTotal();
-        }
-
-        function calculateTotal() {
+            $(`#q-${id}`).val(cart[id]);
             let total = 0, count = 0;
-            products.forEach(p => { if(cart[p.id]) { total += p.price * cart[p.id]; count += cart[p.id]; } });
+            products.forEach(p => { if(cart[p.id]) { total += p.price * cart[p.id]; count += cart[p.id]; }});
             $('#grand-total').text('Rp ' + total.toLocaleString());
             $('#count-items').text(count);
             $('#btn-lanjut').prop('disabled', count === 0);
         }
 
-        // 3. Simpan Pesanan ke Supabase
-        $(document).ready(() => {
-            fetchProducts();
+        window.filterCat = (cat, el) => { 
+            currentCat = cat; 
+            $('.cat-link').removeClass('active'); 
+            $(el).addClass('active'); 
+            renderProducts(); 
+        }
 
-            $("#formPesanan").validate({
-                errorElement: "div",
-                errorClass: "error-message",
-                rules: { nama: "required", whatsapp: { required: true, minlength: 10 } },
-                submitHandler: async function(form) {
-                    const btn = $('#btn-kirim');
-                    btn.prop('disabled', true).text('Mengirim...');
+        // Submit Pesanan
+        $('#formPesanan').submit(async function(e) {
+            e.preventDefault();
+            const btn = $('#btn-kirim');
+            btn.prop('disabled', true).text('Mengirim...');
 
-                    const itemsToSave = products.filter(p => cart[p.id] > 0).map(p => ({
-                        id: p.id, name: p.name, qty: cart[p.id], subtotal: p.price * cart[p.id]
-                    }));
+            const items = products.filter(p => cart[p.id] > 0).map(p => ({ name: p.name, qty: cart[p.id], sub: p.price * cart[p.id] }));
+            const total = items.reduce((a, b) => a + b.sub, 0);
 
-                    const { error } = await sb.from('orders').insert([{
-                        customer_name: $("input[name='nama']").val(),
-                        whatsapp: $("input[name='whatsapp']").val(),
-                        address: $("textarea[name='alamat']").val(),
-                        coords: $("#cust-coords").val(),
-                        items: itemsToSave,
-                        total_price: itemsToSave.reduce((acc, curr) => acc + curr.subtotal, 0),
-                        status: 'pending'
-                    }]);
+            const { error } = await sb.from('orders').insert([{
+                customer_name: $('input[name="nama"]').val(),
+                whatsapp: $('input[name="whatsapp"]').val(),
+                coords: $('#cust-coords').val(),
+                address: $('textarea[name="alamat"]').val(),
+                items: items,
+                total_price: total,
+                desa_id: selectedDesa,
+                status: 'pending'
+            }]);
 
-                    if (error) {
-                        alert('Gagal mengirim: ' + error.message);
-                        btn.prop('disabled', false).text('KONFIRMASI');
-                    } else {
-                        $('#alert-container').html('<div class="alert alert-success mt-2 small">Pesanan Terkirim! Mohon tunggu WA Admin.</div>');
-                        setTimeout(() => location.reload(), 3000);
-                    }
-                }
-            });
-
-            $('input[name="metode"]').change(function() {
-                if(this.value === 'ambil') $('#section-alamat').slideUp(); 
-                else $('#section-alamat').slideDown(() => map.invalidateSize());
-            });
+            if(!error) {
+                Swal.fire('Sukses!', 'Pesanan sedang diproses.', 'success').then(() => location.reload());
+            } else {
+                alert(error.message);
+                btn.prop('disabled', false).text('KONFIRMASI');
+            }
         });
 
-        // Leaflet Logic
-        $('#modalIdentitas').on('shown.bs.modal', function () {
-            if (!map) {
-                map = L.map('map').setView([-7.0051, 110.4381], 16);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                marker = L.marker([-7.0051, 110.4381], {draggable: true}).addTo(map);
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((pos) => {
-                        const { latitude, longitude } = pos.coords;
-                        map.setView([latitude, longitude], 17);
-                        marker.setLatLng([latitude, longitude]);
-                        $('#cust-coords').val(`${latitude}, ${longitude}`);
+        $(document).ready(function() {
+            // Logika ganti metode (Antar/Ambil)
+            $(document).on('change', 'input[name="metode"]', function() {
+                if (this.value === 'ambil') {
+                    $('#section-lokasi').slideUp(); // Sembunyikan Map & Alamat
+                    $('#cust-coords').val('Ambil Sendiri'); // Isi dummy value agar tidak kosong di DB
+                } else {
+                    $('#section-lokasi').slideDown(function() {
+                        if (map) map.invalidateSize(); // Perbaiki tampilan map saat muncul lagi
                     });
                 }
-                marker.on('dragend', () => { const p = marker.getLatLng(); $('#cust-coords').val(`${p.lat}, ${p.lng}`); });
-            } else { map.invalidateSize(); }
+            });
+
+            // Inisialisasi Map saat modal dibuka
+            $('#modalIdentitas').on('shown.bs.modal', function () {
+                if (!map) {
+                    // Default Semarang / Tengah Jawa
+                    map = L.map('map').setView([-7.0051, 110.4381], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    marker = L.marker([-7.0051, 110.4381], {draggable: true}).addTo(map);
+                    
+                    marker.on('dragend', function() {
+                        const p = marker.getLatLng();
+                        $('#cust-coords').val(`${p.lat},${p.lng}`);
+                    });
+
+                    // Coba ambil lokasi GPS user
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            map.setView([lat, lng], 17);
+                            marker.setLatLng([lat, lng]);
+                            $('#cust-coords').val(`${lat},${lng}`);
+                        });
+                    }
+                } else {
+                    map.invalidateSize();
+                }
+            });
         });
 
-        $('#btn-lanjut').click(() => new bootstrap.Modal('#modalIdentitas').show());
+        // Map Initialization
+        $('#btn-lanjut').click(() => {
+            new bootstrap.Modal('#modalIdentitas').show();
+            setTimeout(() => {
+                if(!map) {
+                    map = L.map('map').setView([-7.0, 110.4], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    marker = L.marker([-7.0, 110.4], {draggable: true}).addTo(map);
+                    marker.on('dragend', () => $('#cust-coords').val(marker.getLatLng().lat + ',' + marker.getLatLng().lng));
+                    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
+                        const c = [p.coords.latitude, p.coords.longitude];
+                        map.setView(c, 17); marker.setLatLng(c); $('#cust-coords').val(c[0]+','+c[1]);
+                    });
+                }
+            }, 500);
+        });
+
+        function resetDesa() { localStorage.removeItem('user_desa'); location.reload(); }
+        $(document).ready(init);
     </script>
 </body>
 </html>
