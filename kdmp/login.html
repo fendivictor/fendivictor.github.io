@@ -105,9 +105,21 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        // 1. Inisialisasi Supabase 
+        const supabaseUrl = 'https://fsbtlscplnmdyomtesal.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w';
+        const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         $(document).ready(function() {
+            sb.auth.onAuthStateChange((event, session) => {
+                if (session) {
+                    window.location.href = "admin-dashboard.html";
+                }
+            });
+
             $("#loginForm").validate({
                 // Gunakan DIV sebagai elemen error
                 errorElement: "div",
@@ -127,22 +139,36 @@
                     error.insertAfter(element);
                 },
 
-                submitHandler: function(form) {
+                // Di dalam submitHandler loginForm
+                submitHandler: async function(form, event) {
+                    // Mencegah halaman refresh/ngeblink
+                    event.preventDefault(); 
+                    
                     const btn = $(".btn-login");
-                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Autentikasi...');
+                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Loading...');
 
-                    const user = $("input[name='username']").val();
-                    const pass = $("input[name='password']").val();
+                    const email = $("input[name='username']").val(); 
+                    const password = $("input[name='password']").val();
 
-                    setTimeout(() => {
-                        if(user === "admin" && pass === "admin123") {
-                            $('#alert-placeholder').html('<div class="alert alert-success border-0 small py-2">Berhasil! Mengalihkan halaman...</div>');
-                            setTimeout(() => { window.location.href = "admin-dashboard.html"; }, 1000);
-                        } else {
-                            $('#alert-placeholder').html('<div class="alert alert-danger border-0 small py-2">Username atau password salah!</div>');
-                            btn.prop('disabled', false).text("MASUK KE PANEL");
+                    try {
+                        const { data, error } = await sb.auth.signInWithPassword({
+                            email: email,
+                            password: password,
+                        });
+
+                        if (error) {
+                            throw error; // Lempar ke blok catch
                         }
-                    }, 1500);
+
+                        if (data.session) {
+                            $('#alert-placeholder').html('<div class="alert alert-success border-0 small py-2">Berhasil! Mengalihkan...</div>');
+                            setTimeout(() => { window.location.href = "admin-dashboard.html"; }, 1000);
+                        }
+                    } catch (err) {
+                        console.error("Detail Error:", err);
+                        $('#alert-placeholder').html(`<div class="alert alert-danger border-0 small py-2">${err.message}</div>`);
+                        btn.prop('disabled', false).text("MASUK KE PANEL");
+                    }
                 }
             });
         });
