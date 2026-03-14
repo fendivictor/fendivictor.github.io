@@ -146,7 +146,7 @@
                 loadDesaFilter();
             } else {
                 $('#header-title').text(`Desa ${userDesaId}`);
-                $('#nav-dynamic-item').html('<i class="bi bi-file-earmark-bar-graph"></i><span>Laporan</span>').attr('onclick', 'alert("Segera hadir")');
+                $('#nav-dynamic-item').remove();
             }
             switchTab('pesanan');
             subscribeOrders();
@@ -158,6 +158,10 @@
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'orders' },
                 (payload) => {
+                    if (payload.eventType === 'INSERT' && userRole === 'admin_desa' && payload.new.desa_id !== userDesaId) {
+                        Swal.fire('Perhatian!', `Pesanan baru masuk dari ${payload.new.customer_name}`, 'info');
+                    }
+
                     fetchOrders(); // Jalankan ulang fetchOrders untuk memperbarui UI
                 }
             )
@@ -318,20 +322,39 @@
 
         async function fetchProducts() {
             $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success spinner-border-sm"></div></div>');
-            const { data: products, error } = await sb.from('products').select('*').order('created_at', { ascending: false });
-            if (error) return alert(error.message);
+
+            let q = sb.from('products').select('*');
+    
+            // Filter berdasarkan Desa jika bukan Super Admin
+            if (userRole !== 'super_admin') {
+                q = q.eq('desa_id', userDesaId);
+            }
+
+            const { data: products, error } = await q.order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Gagal ambil produk:", error.message);
+                return $('#main-content').html('<p class="text-center py-5 text-danger">Gagal memuat data</p>');
+            }
 
             let html = '';
-            products.forEach(p => {
+            // PERBAIKAN: Gunakan 'products' bukan 'data'
+            (products || []).forEach(p => {
                 html += `
-                <div class="card order-card p-3">
+                <div class="card order-card p-3 mb-3 border-0 shadow-sm" style="border-radius:15px;">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="fw-800 mb-0">${p.name} #${p.unit}</h6>
-                        <span class="fw-bold text-success">Rp ${p.price.toLocaleString()}</span>
+                        <div>
+                            <h6 class="fw-800 mb-0">${p.name}</h6> <small class="text-muted">Unit: ${p.unit || '-'}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold text-success d-block">Rp ${p.price.toLocaleString()}</span>
+                            <button class="btn btn-link btn-sm p-0 text-primary fw-bold text-decoration-none" onclick="editProduct('${p.id}')">Edit</button>
+                        </div>
                     </div>
-                    <p class="mb-0 mt-2" style="font-size: 0.85rem;">${p.description || 'Tidak ada deskripsi'}</p>
+                    <p class="mb-0 mt-2 opacity-75" style="font-size: 0.8rem;">${p.description || 'Tidak ada deskripsi'}</p>
                 </div>`;
             });
+
             $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Belum ada produk</p>');
         }
 
