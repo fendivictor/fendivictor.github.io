@@ -324,11 +324,6 @@
             $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success spinner-border-sm"></div></div>');
 
             let q = sb.from('products').select('*');
-    
-            // Filter berdasarkan Desa jika bukan Super Admin
-            if (userRole !== 'super_admin') {
-                q = q.eq('desa_id', userDesaId);
-            }
 
             const { data: products, error } = await q.order('created_at', { ascending: false });
 

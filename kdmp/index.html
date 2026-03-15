@@ -227,7 +227,7 @@
         }
 
         async function fetchProducts() {
-            const { data } = await sb.from('products').select('*').eq('desa_id', selectedDesa);
+            const { data } = await sb.from('products').select('*');
             products = data || [];
             renderProducts();
         }
