@@ -2,6 +2,9 @@
 var unitOptionsHTML = '';
 
 const ProdukPage = {
+    currentPage: 0,
+    pageSize: 5,
+    searchKeyword: '',
     init: async function() {
         $('#tab-label').text('Manajemen Produk');
         this.fetchProducts();
@@ -16,9 +19,37 @@ const ProdukPage = {
         // Buat options untuk select
         $('#p-category').html(cats.map(c => `<option value="${c.id}">${c.name}</option>`).join(''));
         unitOptionsHTML = units.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+
+        this.renderSearchUI();
+    },
+
+    renderSearchUI: function() {
+        const html = `
+            <div class="row g-2 mb-3">
+                <div class="col">
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="product-search" class="form-control border-0" placeholder="Cari nama produk..." value="${this.searchKeyword}">
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#filter-area').html(html).show();
+
+        // Listener search dengan debounce sederhana
+        $('#product-search').on('input', (e) => {
+            this.searchKeyword = e.target.value;
+            this.currentPage = 0; // Reset ke halaman 1 saat cari
+            clearTimeout(this.searchTimer);
+            this.searchTimer = setTimeout(() => {
+                this.fetchProducts();
+            }, 500);
+        });
     },
 
     fetchProducts: async function() {
+        const from = this.currentPage * this.pageSize;
+        const to = from + this.pageSize - 1;
         $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success"></div></div>');
 
         // Join: Products -> Categories -> Variants -> Units
@@ -32,9 +63,15 @@ const ProdukPage = {
                 stok,
                 units(name)
             )
-        `);
+        `, { count: 'exact' });
 
-        const { data: products } = await q.order('name');
+        if (this.searchKeyword) {
+            q = q.ilike('name', `%${this.searchKeyword}%`);
+        }
+
+        const { data: products, count, error } = await q.order('name').range(from, to);
+
+        if (error) return console.error(error);
 
         let html = '';
         (products || []).forEach(p => {
@@ -44,8 +81,11 @@ const ProdukPage = {
                 variantHtml += `
                     <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 mb-1" style="font-size: 0.75rem;">
                         <div class="d-flex align-items-center">
-                            <button class="btn btn-sm text-danger me-2 p-0" onclick="ProdukPage.deleteVariant('${v.id}', '${v.units.name}')">
+                            <button class="btn btn-sm text-danger me-1 p-0" onclick="ProdukPage.deleteVariant('${v.id}', '${v.units.name}')">
                                 <i class="bi bi-trash-fill"></i>
+                            </button>
+                            <button class="btn btn-sm text-primary me-2 p-0" onclick="ProdukPage.editVariant('${v.id}', '${v.units.name}', ${v.harga_beli}, ${v.harga_jual})">
+                                <i class="bi bi-pencil-square"></i>
                             </button>
                             <span class="fw-bold">${v.units.name}</span>
                         </div>
@@ -74,7 +114,32 @@ const ProdukPage = {
             </div>`;
         });
 
+        html += this.renderPagination(count);
+
         $('#main-content').html(html || '<p class="text-center py-5">Produk kosong</p>');
+    },
+
+    renderPagination: function(total) {
+        const totalPages = Math.ceil(total / this.pageSize);
+        if (totalPages <= 1) return '';
+
+        return `
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+                <button class="btn btn-sm btn-outline-primary" 
+                    ${this.currentPage === 0 ? 'disabled' : ''} 
+                    onclick="ProdukPage.changePage(${this.currentPage - 1})">Prev</button>
+                <span class="small text-muted">Hal ${this.currentPage + 1} dari ${totalPages}</span>
+                <button class="btn btn-sm btn-outline-primary" 
+                    ${this.currentPage + 1 >= totalPages ? 'disabled' : ''} 
+                    onclick="ProdukPage.changePage(${this.currentPage + 1})">Next</button>
+            </div>
+        `;
+    },
+
+    changePage: function(newPage) {
+        this.currentPage = newPage;
+        this.fetchProducts();
+        window.scrollTo(0, 0);
     },
 
     openAddProduct: async function() {
@@ -112,6 +177,52 @@ const ProdukPage = {
             </div>
         `;
         $('#variant-container').append(html);
+    },
+
+    editVariant: async function(variantId, unitName, currentBeli, currentJual) {
+        const { value: formValues } = await Swal.fire({
+            title: `Edit Harga - ${unitName}`,
+            html: `
+                <div class="text-start">
+                    <label class="small text-muted">Harga Modal (Beli)</label>
+                    <input id="swal-edit-beli" type="number" class="form-control mb-2" value="${currentBeli}">
+                    <label class="small text-muted">Harga Jual Standar</label>
+                    <input id="swal-edit-jual" type="number" class="form-control" value="${currentJual}">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Update Harga',
+            preConfirm: () => {
+                const b = document.getElementById('swal-edit-beli').value;
+                const j = document.getElementById('swal-edit-jual').value;
+                if (!b || !j) return Swal.showValidationMessage('Harga tidak boleh kosong');
+                return { harga_beli: b, harga_jual: j };
+            }
+        });
+
+        if (formValues) {
+            Swal.showLoading();
+            
+            const { error } = await sb
+                .from('product_variants')
+                .update({
+                    harga_beli: parseInt(formValues.harga_beli),
+                    harga_jual: parseInt(formValues.harga_jual)
+                })
+                .eq('id', variantId);
+
+            if (!error) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Update',
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                this.fetchProducts(); // Refresh data pusat
+            } else {
+                Swal.fire('Gagal Update', error.message, 'error');
+            }
+        }
     },
 
     deleteVariant: async function(variantId, unitName) {
