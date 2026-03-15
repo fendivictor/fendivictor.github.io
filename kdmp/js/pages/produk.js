@@ -43,7 +43,12 @@ const ProdukPage = {
             p.product_variants.forEach(v => {
                 variantHtml += `
                     <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 mb-1" style="font-size: 0.75rem;">
-                        <span class="fw-bold">${v.units.name}</span>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm text-danger me-2 p-0" onclick="ProdukPage.deleteVariant('${v.id}', '${v.units.name}')">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                            <span class="fw-bold">${v.units.name}</span>
+                        </div>
                         <div class="text-end">
                             <span class="text-dark small">Beli: Rp ${v.harga_beli.toLocaleString()}</span><br>
                             <span class="text-success fw-bold">Jual: Rp ${v.harga_jual.toLocaleString()}</span>
@@ -107,6 +112,47 @@ const ProdukPage = {
             </div>
         `;
         $('#variant-container').append(html);
+    },
+
+    deleteVariant: async function(variantId, unitName) {
+        const result = await Swal.fire({
+            title: 'Hapus Varian?',
+            text: `Apakah kamu yakin ingin menghapus satuan "${unitName}" dari katalog pusat?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        });
+
+        if (result.isConfirmed) {
+            // Loader
+            Swal.showLoading();
+
+            const { error } = await sb
+                .from('product_variants')
+                .delete()
+                .eq('id', variantId);
+
+            if (error) {
+                // Biasanya error jika varian ini sudah dipakai di tabel 'inventory' desa (Foreign Key Constraint)
+                if (error.code === '23503') {
+                    Swal.fire('Gagal Hapus', 'Varian ini tidak bisa dihapus karena sudah digunakan oleh stok di beberapa desa.', 'error');
+                } else {
+                    Swal.fire('Error', error.message, 'error');
+                }
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Terhapus!',
+                    text: 'Varian telah dihapus dari katalog.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                this.fetchProducts(); // Refresh tampilan
+            }
+        }
     },
 
     saveProduct: async function() {
