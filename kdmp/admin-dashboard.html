@@ -170,6 +170,7 @@
                 </div>
         </div>
 
+        <div id="button-add-data"></div>
         <div id="main-content"></div>
     </div>
 
@@ -193,480 +194,51 @@
         </div>
     </div>
 
+    <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content" style="border-radius: 25px; border: none;">
+                <div class="modal-header border-0 px-4 pt-4">
+                    <h5 class="modal-title fw-800" id="productModalLabel">Tambah Produk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Nama Barang</label>
+                        <input type="text" id="p-name" class="form-control border-0 bg-light" placeholder="Contoh: Indomie Goreng" style="border-radius: 12px;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Kategori</label>
+                        <select id="p-category" class="form-select border-0 bg-light" style="border-radius: 12px;"></select>
+                    </div>
+
+                    <hr class="my-4 opacity-25">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-800 mb-0" style="font-size: 0.9rem;">Varian Satuan & Harga</h6>
+                        <button class="btn btn-sm btn-success" onclick="ProdukPage.addRowVariant()" style="border-radius: 8px;">
+                            <i class="bi bi-plus-lg"></i> Tambah Satuan
+                        </button>
+                    </div>
+                    
+                    <div id="variant-container">
+                        </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light fw-bold w-100 py-2" style="border-radius: 12px;" onclick="saveProduct()">Simpan Produk</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>
-        const config = {
-            url: 'https://fsbtlscplnmdyomtesal.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w'
-        };
+    <script src="js/pages/pesanan.js"></script>
+    <script src="js/pages/produk.js"></script>
+    <script src="js/pages/master.js"></script>
 
-        const sb = window.supabase.createClient(config.url, config.key);
-        const sbAdmin = window.supabase.createClient(config.url, config.key, { auth: { persistSession: false } });
+    <script src="js/app.js"></script>
 
-        let userRole, userDesaId, selectedDesaFilter = 'all';
-        var currentTab = 'pesanan';
-        var namaDesa = '';
-
-        async function init() {
-            const { data: { session } } = await sb.auth.getSession();
-            if (!session) return window.location.href = "login.html";
-
-            const meta = session.user.user_metadata;
-            const email = session.user.email;
-            userRole = meta.role || 'admin_desa';
-            userDesaId = meta.desa_id || null;
-            namaDesa = meta.nama_desa || null;
-
-            $('#admin-display-name').text(meta.nama_desa || email.split('@')[0]);
-            $('#admin-role-badge').text(userRole.toUpperCase().replace('_', ' '));
-            const initial = (meta.nama_desa || email).charAt(0).toUpperCase();
-            $('#avatar-initial').text(initial);
-            $('#loader').fadeOut();
-
-            if (userRole === 'super_admin') {
-                $('#header-title').text('Admin Asosiasi');
-                $('#nav-dynamic-sidebar').html(`
-                    <div class="px-3 mt-4 mb-2">
-                        <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MASTER DATA</small>
-                    </div>
-                    <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('desa', this)">
-                        <i class="bi bi-buildings"></i> Manajemen Desa
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('master_kategori', this)">
-                        <i class="bi bi-tags"></i> Kategori Produk
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('master_satuan', this)">
-                        <i class="bi bi-unity"></i> Satuan Barang
-                    </a>
-                `);
-                loadDesaFilter();
-            } else {
-                $('#header-title').text(`Desa ${namaDesa}`);
-                $('#nav-dynamic-sidebar').remove();
-            }
-            switchTab('pesanan');
-            subscribeOrders();
-        }
-
-        function subscribeOrders() {
-            sb.channel('custom-all-channel')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'orders' },
-                (payload) => {
-                    if (payload.eventType === 'INSERT' && userRole === 'admin_desa' && payload.new.desa_id !== userDesaId) {
-                        Swal.fire('Perhatian!', `Pesanan baru masuk dari ${payload.new.customer_name}`, 'info');
-                    }
-
-                    fetchOrders(); // Jalankan ulang fetchOrders untuk memperbarui UI
-                }
-            )
-            .subscribe();
-        }
-
-        async function loadDesaFilter() {
-            const { data } = await sb.from('desas').select('id, nama_desa');
-            let options = '<option value="all">Semua Desa</option>';
-            data.forEach(d => options += `<option value="${d.id}">${d.nama_desa}</option>`);
-            $('#filter-area').html(`<select class="form-select filter-select" onchange="filterByDesa(this.value)">${options}</select>`);
-        }
-
-        function filterByDesa(val) {
-            selectedDesaFilter = val;
-            fetchOrders();
-        }
-
-        async function switchTab(tab, el) {
-            // Reset status aktif di sidebar
-            $('.list-group-item').removeClass('active');
-            if(el) $(el).addClass('active');
-
-            // Tutup Sidebar otomatis (khusus mobile)
-            const sidebar = bootstrap.Offcanvas.getInstance(document.getElementById('sidebarMenu'));
-            if(sidebar) sidebar.hide();
-
-            currentTab = tab;
-            
-            // Tentukan konten berdasarkan Tab
-            if (tab === 'pesanan') {
-                $('#stat-area').show();
-                $('#stat-label').text('Pesanan Masuk');
-                $('#tab-label').text('Pesanan Masuk');
-                $('#filter-area').show();
-                fetchOrders();
-            } else if (tab === 'history') {
-                $('#stat-area').show();
-                $('#stat-label').text('Transaksi Selesai');
-                $('#tab-label').text('Riwayat Selesai');
-                $('#filter-area').show();
-                fetchOrders();
-            } else if (tab === 'produk') {
-                $('#stat-area').hide();
-                $('#tab-label').text('Katalog Produk');
-                $('#filter-area').hide();
-                fetchProducts(); // Panggil fungsi yang tadi kita buat
-            } else if (tab === 'desa') {
-                $('#stat-area').hide();
-                $('#tab-label').text('Daftar Mitra Desa');
-                $('#filter-area').hide();
-                fetchDesas();
-            } else if (tab === 'master_kategori') {
-                $('#stat-area').hide();
-                $('#tab-label').text('Master Kategori');
-                fetchMasterData('categories', 'Kategori');
-                $('#filter-area').hide();
-            } else if (tab === 'master_satuan') {
-                $('#stat-area').hide();
-                $('#tab-label').text('Master Satuan');
-                fetchMasterData('units', 'Satuan');
-                $('#filter-area').hide();
-            }
-        }
-
-        async function fetchMasterData(table, label) {
-            $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success spinner-border-sm"></div></div>');
-            
-            const { data, error } = await sb.from(table).select('*').order('name');
-            
-            let html = `
-                <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
-                    <div class="card-body">
-                        <div class="input-group">
-                            <input type="text" id="new-master-name" class="form-control border-0 bg-light" placeholder="Tambah ${label} Baru...">
-                            <button class="btn btn-success" onclick="addMasterData('${table}')"><i class="bi bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            (data || []).forEach(item => {
-                html += `
-                    <div class="card border-0 shadow-sm mb-2" style="border-radius: 12px;">
-                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                            <span class="fw-600" style="font-size: 0.85rem;">${item.name}</span>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-link text-primary p-0" onclick="editMasterData('${table}', '${item.id}', '${item.name}')"><i class="bi bi-pencil-square"></i></button>
-                                <button class="btn btn-link text-danger p-0" onclick="deleteMasterData('${table}', '${item.id}')"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            $('#main-content').html(html || `<p class="text-center py-5">Belum ada data ${label}</p>`);
-        }
-
-        // Fungsi CRUD Master Data
-        async function addMasterData(table) {
-            const name = $('#new-master-name').val();
-            if(!name) return;
-            const { error } = await sb.from(table).insert([{ name }]);
-            if(!error) fetchMasterData(table);
-        }
-
-        async function deleteMasterData(table, id) {
-            const { isConfirmed } = await Swal.fire({
-                title: 'Hapus Data?',
-                text: "Produk dengan kategori/satuan ini mungkin akan terpengaruh.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33'
-            });
-            if (isConfirmed) {
-                await sb.from(table).delete().eq('id', id);
-                fetchMasterData(table);
-            }
-        }
-
-        async function editMasterData(table, id, oldName) {
-            const { value: newName } = await Swal.fire({
-                title: 'Edit Data',
-                input: 'text',
-                inputValue: oldName,
-                showCancelButton: true
-            });
-            if (newName) {
-                await sb.from(table).update({ name: newName }).eq('id', id);
-                fetchMasterData(table);
-            }
-        }
-
-        async function fetchOrders() {
-            let q = sb.from('orders').select('*');
-    
-            // FILTER 1: Berdasarkan Desa (Jika dipilih)
-            if (userRole === 'super_admin' && selectedDesaFilter !== 'all') {
-                q = q.eq('desa_id', selectedDesaFilter);
-            } else if (userRole !== 'super_admin') {
-                q = q.eq('desa_id', userDesaId);
-            }
-
-            // 2. FILTER TAB (Logic yang kamu berikan)
-            if (currentTab === 'pesanan') {
-                // Semua status KECUALI yang sudah beres/batal
-                q = q.not('status', 'in', '("Selesai","Dibatalkan")'); 
-            } else if (currentTab === 'history') {
-                q = q.in('status', ['Selesai', 'Dibatalkan']);
-            }
-
-            const { data: orders } = await q.order('created_at', { ascending: false });
-            let html = '', total = 0, pendingCount = 0;
-
-            (orders || []).forEach(o => {
-                if (o.status !== 'Dibatalkan') total += o.total_price;
-                if (currentTab === 'pesanan' && (o.status === 'pending' || o.status === 'Pesanan Masuk')) pendingCount++;
-                if (currentTab === 'history' && o.status === 'Selesai') pendingCount++;
-                const isHistory = ['Selesai', 'Dibatalkan'].includes(o.status);
-
-                let coordButton = '';
-                if(o.coords && o.coords !== 'Ambil Sendiri') {
-                    // Perbaikan link Google Maps
-                    coordButton = `<a href="https://www.google.com/maps?q=${o.coords}" target="_blank" class="btn btn-outline-danger btn-sm px-3 me-1"><i class="bi bi-geo-alt-fill"></i></a>`;
-                }
-
-                let btnLabel = '';
-                let btnClass = '';
-
-                if (o.status === 'pending' || o.status === 'Pesanan Masuk') { 
-                    btnLabel = 'KONFIRMASI'; btnClass = 'btn-warning'; 
-                } else if (o.status === 'Dikonfirmasi') { 
-                    btnLabel = 'MULAI PROSES'; btnClass = 'btn-info text-white'; 
-                } else if (o.status === 'Diproses') { 
-                    btnLabel = 'SIAP / KIRIM'; btnClass = 'btn-primary'; 
-                } else if (o.status === 'Diantar' || o.status === 'Siap Diambil') { 
-                    btnLabel = 'SELESAIKAN'; btnClass = 'btn-success'; 
-                }
-
-                html += `<div class="card order-card p-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <span class="status-badge border bg-light ${getStatusClass(o.status)}">${o.status}</span>
-                            <h6 class="fw-800 mb-0 mt-2">${o.customer_name}</h6>
-                            <small class="opacity-50" style="font-size:0.6rem;">Desa: ${o.desa_id}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="fw-bold text-success">Rp ${o.total_price.toLocaleString()}</span>
-                            <div class="mt-1">
-                                ${coordButton}
-                                <button class="btn btn-outline-success btn-sm px-3" onclick="window.open('https://wa.me/62${o.whatsapp}')"><i class="bi bi-whatsapp"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-3 d-flex gap-2">
-                        ${!isHistory ? `
-                            <button class="btn ${btnClass} btn-sm flex-grow-1 fw-bold py-2 shadow-sm" 
-                                    onclick="changeStatus('${o.id}', '${o.status}')" style="border-radius: 12px;">
-                                <i class="bi bi-arrow-right-circle-fill me-1"></i> ${btnLabel}
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm px-3" onclick="cancelOrder('${o.id}')" style="border-radius: 12px;">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
-                        ` : `
-                            <button class="btn btn-light btn-sm w-100 py-2 border text-muted fw-bold" disabled style="border-radius: 12px;">
-                                <i class="bi bi-check-circle-fill text-success"></i> TERARSIP
-                            </button>
-                        `}
-                    </div>
-                </div>`;
-            });
-
-            $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Belum ada pesanan</p>');
-            $('#stat-new').text(pendingCount);
-            $('#stat-omzet').text('Rp ' + (total/1000).toFixed(0) + 'K');
-        }
-
-        // --- DARK MODE LOGIC ---
-        function toggleDarkMode() {
-            const current = document.documentElement.getAttribute('data-bs-theme');
-            const target = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-bs-theme', target);
-            $('#dark-icon').attr('class', target === 'dark' ? 'bi bi-sun-fill fs-4' : 'bi bi-moon-stars fs-4');
-            localStorage.setItem('theme', target);
-        }
-
-        // --- AUTH ACTIONS ---
-        $(document).on('submit', '#formTambahDesa', async function(e) {
-            e.preventDefault();
-            const email = $('#new_email_desa').val(), pass = $('#new_password_desa').val(), id = $('#new_id_desa').val(), nama = $('#new_nama_desa').val();
-            
-            try {
-                const { error: authErr } = await sbAdmin.auth.signUp({ email, password: pass, options: { data: { role: 'admin_desa', desa_id: id } } });
-                if (authErr) throw authErr;
-                const { error: dbErr } = await sb.from('desas').insert([{ id, nama_desa: nama, admin_email: email }]);
-                if (dbErr) throw dbErr;
-
-                Swal.fire('Berhasil!', `Desa ${nama} telah aktif.`, 'success');
-                $('#modalTambahDesa').modal('hide');
-                this.reset();
-                fetchDesas();
-                loadDesaFilter(); // Refresh dropdown
-            } catch (err) { Swal.fire('Gagal', err.message, 'error'); }
-        });
-
-        async function fetchProducts() {
-            $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success spinner-border-sm"></div></div>');
-
-            let q = sb.from('products').select('*');
-
-            const { data: products, error } = await q.order('created_at', { ascending: false });
-
-            if (error) {
-                console.error("Gagal ambil produk:", error.message);
-                return $('#main-content').html('<p class="text-center py-5 text-danger">Gagal memuat data</p>');
-            }
-
-            let html = '';
-            // PERBAIKAN: Gunakan 'products' bukan 'data'
-            (products || []).forEach(p => {
-                html += `
-                <div class="card order-card p-3 mb-3 border-0 shadow-sm" style="border-radius:15px;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="fw-800 mb-0">${p.name}</h6> <small class="text-muted">Unit: ${p.unit || '-'}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="fw-bold text-success d-block">Rp ${p.price.toLocaleString()}</span>
-                            <button class="btn btn-link btn-sm p-0 text-primary fw-bold text-decoration-none" onclick="editProduct('${p.id}')">Edit</button>
-                        </div>
-                    </div>
-                    <p class="mb-0 mt-2 opacity-75" style="font-size: 0.8rem;">${p.description || 'Tidak ada deskripsi'}</p>
-                </div>`;
-            });
-
-            $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Belum ada produk</p>');
-        }
-
-        async function fetchDesas() {
-            $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success spinner-border-sm"></div></div>');
-            const { data: desas, error } = await sb.from('desas').select('*').order('nama_desa');
-            if (error) return alert(error.message);
-
-            let html = '';
-            desas.forEach(d => {
-                html += `
-                <div class="card desa-card border-0 shadow-sm mb-2">
-                    <div class="card-body p-3 d-flex align-items-center">
-                        <div class="bg-success-subtle rounded-circle p-3 me-3 text-success">
-                            <i class="bi bi-houses fs-5"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-0">${d.nama_desa}</h6>
-                            <small class="text-muted" style="font-size: 0.75rem;">ID: ${d.id} | ${d.admin_email}</small>
-                        </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
-                    </div>
-                </div>`;
-            });
-            $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Belum ada desa terdaftar</p>');
-        }
-
-        async function handleLogout() {
-            Swal.fire({ title: 'Keluar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#198754' }).then(async (r) => {
-                if(r.isConfirmed) { await sb.auth.signOut(); window.location.href="login.html"; }
-            });
-        }
-
-        function getStatusClass(status) {
-            switch(status) {
-                case 'Pesanan Masuk': return 'bg-warning-subtle text-warning border-warning'; // Kuning
-                case 'Dikonfirmasi':  return 'bg-info-subtle text-info border-info';       // Biru Muda
-                case 'Diproses':      return 'bg-primary-subtle text-primary border-primary'; // Biru
-                case 'Siap Diambil':  return 'bg-secondary-subtle text-secondary border-secondary'; // Abu
-                case 'Diantar':       return 'bg-info text-dark';                         // Biru Solid
-                case 'Selesai':       return 'bg-success-subtle text-success border-success'; // Hijau
-                case 'Dibatalkan':    return 'bg-danger-subtle text-danger border-danger';    // Merah
-                default: return 'bg-light text-muted';
-            }
-        }
-
-        // Fungsi Utama Ubah Status
-        async function changeStatus(orderId, currentStatus) {
-            let nextStatus = '';
-            let confirmText = '';
-            
-            // Alur Status Step-by-Step
-            if (currentStatus === 'pending' || currentStatus === 'Pesanan Masuk') {
-                nextStatus = 'Dikonfirmasi';
-                confirmText = 'Konfirmasi pesanan ini?';
-            } 
-            else if (currentStatus === 'Dikonfirmasi') {
-                nextStatus = 'Diproses';
-                confirmText = 'Mulai proses/kemas barang?';
-            } 
-            else if (currentStatus === 'Diproses') {
-                // KHUSUS: Pilihan antara Diantar atau Siap Diambil
-                const { value: pilihan } = await Swal.fire({
-                    title: 'Pesanan Selesai Diproses',
-                    text: 'Pilih metode distribusi selanjutnya:',
-                    icon: 'question',
-                    showDenyButton: true,
-                    showCancelButton: true,
-                    confirmButtonText: '🛵 Diantar',
-                    denyButtonText: '🏠 Siap Diambil',
-                    confirmButtonColor: '#0dcaf0',
-                    denyButtonColor: '#6c757d'
-                });
-
-                if (pilihan) nextStatus = 'Diantar';
-                else if (pilihan === false) nextStatus = 'Siap Diambil'; // Deny button
-                else return; // Cancel
-            } 
-            else if (currentStatus === 'Diantar' || currentStatus === 'Siap Diambil') {
-                nextStatus = 'Selesai';
-                confirmText = 'Tandai pesanan telah diterima & SELESAI?';
-            }
-
-            if (nextStatus) {
-                const { isConfirmed } = await Swal.fire({
-                    title: 'Update Status',
-                    text: confirmText || `Ubah status ke ${nextStatus}?`,
-                    icon: 'info',
-                    showCancelButton: true,
-                    confirmButtonColor: '#198754'
-                });
-
-                if (isConfirmed) {
-                    const { error } = await sb.from('orders').update({ status: nextStatus }).eq('id', orderId);
-                    if (!error) {
-                        Swal.fire({ icon: 'success', title: nextStatus, timer: 1000, showConfirmButton: false });
-                        fetchOrders();
-                    }
-                }
-            }
-        }
-
-        // Fungsi Khusus Batalkan Pesanan
-        async function cancelOrder(orderId) {
-            const { isConfirmed } = await Swal.fire({
-                title: 'Batalkan Pesanan?',
-                text: "Tindakan ini tidak dapat dibatalkan.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                confirmButtonText: 'Ya, Batalkan!',
-                cancelButtonText: 'Kembali'
-            });
-
-            if (isConfirmed) {
-                const { error } = await sb.from('orders')
-                    .update({ status: 'Dibatalkan' })
-                    .eq('id', orderId);
-
-                if (!error) {
-                    fetchOrders();
-                }
-            }
-        }
-
-        $(document).ready(() => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            if(savedTheme === 'dark') $('#dark-icon').attr('class', 'bi bi-sun-fill fs-4');
-            init();
-        });
-    </script>
 </body>
 </html>
