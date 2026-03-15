@@ -14,7 +14,63 @@
         :root { --admin-bg: #f4f7f6; --card-bg: #ffffff; --text-main: #212529; --primary: #198754; --dark: #212529; }
         [data-bs-theme="dark"] { --admin-bg: #121212; --card-bg: #1e1e1e; --text-main: #f8f9fa; --dark: #000000; }
 
-        body { background-color: var(--admin-bg); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 90px; transition: 0.3s; }
+        /* Perkecil ukuran font sidebar */
+        .list-group-item { 
+            transition: 0.3s; 
+            font-weight: 500; 
+            font-size: 0.85rem; /* Font lebih kecil */
+            border-left: 4px solid transparent !important;
+        }
+
+        .list-group-item i {
+            font-size: 1.1rem; /* Icon tetap nyaman dilihat */
+            margin-right: 12px;
+        }
+
+        .list-group-item.active { 
+            background: rgba(25, 135, 84, 0.1) !important; 
+            color: #198754 !important; 
+            border-left: 4px solid #198754 !important;
+            border-radius: 0;
+            margin-right: 0;
+        }
+
+        /* Header Profil yang Lebih Menarik */
+        .profile-section {
+            background: linear-gradient(135deg, #198754 0%, #0d5233 100%);
+            padding: 25px 20px;
+            margin: 10px;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-section::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            background: white;
+            color: #198754;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        body { background-color: var(--admin-bg); color: var(--text-main); font-family: 'Inter', sans-serif; padding-bottom: 20px; transition: 0.3s; }
         
         .admin-header { background: var(--dark); color: white; padding: 25px 20px 50px; border-radius: 0 0 30px 30px; }
         .stat-card { background: var(--card-bg); border: none; border-radius: 20px; margin-top: -35px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
@@ -40,27 +96,64 @@
         </div>
     </div>
 
-    <div class="admin-header d-flex justify-content-between align-items-start">
-        <div>
-            <h5 class="fw-800 mb-0" id="header-title">Panel Admin</h5>
-            <p class="small opacity-50 mb-0" id="admin-info">Memuat...</p>
+    <nav class="navbar navbar-dark bg-dark sticky-top shadow-sm px-3" style="border-radius: 0 0 20px 20px;">
+        <div class="container-fluid">
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand fw-800 ms-2" href="#" id="header-title">Panel Admin</a>
+            <div class="d-flex gap-2">
+                <button class="btn btn-link text-white p-0" onclick="toggleDarkMode()">
+                    <i id="dark-icon" class="bi bi-moon-stars fs-5"></i>
+                </button>
+            </div>
         </div>
-        <div class="d-flex gap-3">
-            <button class="btn btn-link text-white p-0" onclick="toggleDarkMode()">
-                <i id="dark-icon" class="bi bi-moon-stars fs-4"></i>
-            </button>
-            <button class="btn btn-link text-white p-0" onclick="handleLogout()">
-                <i class="bi bi-box-arrow-right fs-4"></i>
-            </button>
+    </nav>
+
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebarMenu" style="width: 280px; border: none;">
+        <div class="profile-section d-flex align-items-center gap-3">
+            <div class="avatar-circle" id="avatar-initial">A</div>
+            <div class="overflow-hidden">
+                <h6 class="mb-0 fw-800 text-truncate" style="font-size: 0.9rem;" id="admin-display-name">Memuat...</h6>
+                <div class="badge bg-white text-success mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px;" id="admin-role-badge">ADMIN DESA</div>
+            </div>
+        </div>
+
+        <div class="offcanvas-body p-0">
+            <div class="px-3 mt-2 mb-3">
+                <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MENU UTAMA</small>
+            </div>
+            
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('pesanan', this)">
+                    <i class="bi bi-receipt"></i> Pesanan Aktif
+                </a>
+                <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('history', this)">
+                    <i class="bi bi-clock-history"></i> Riwayat Transaksi
+                </a>
+                <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('produk', this)">
+                    <i class="bi bi-box-seam"></i> Manajemen Produk
+                </a>
+                
+                <div id="nav-dynamic-sidebar"></div>
+
+                <div class="px-3 mt-4 mb-2">
+                    <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">SISTEM</small>
+                </div>
+                
+                <a href="#" class="list-group-item list-group-item-action bg-transparent text-danger py-3" onclick="handleLogout()">
+                    <i class="bi bi-box-arrow-right"></i> Keluar Akun
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="container">
-        <div id="stat-area" class="card stat-card mb-4">
+        <div id="stat-area" class="card stat-card mb-4 mt-5">
             <div class="card-body py-4 text-center">
                 <div class="row">
                     <div class="col-6 border-end">
-                        <small class="text-muted d-block fw-600">Pesanan Baru</small>
+                        <small class="text-muted d-block fw-600" id="stat-label">Pesanan Baru</small>
                         <span id="stat-new" class="fw-800 fs-3 text-warning">0</span>
                     </div>
                     <div class="col-6">
@@ -78,19 +171,6 @@
         </div>
 
         <div id="main-content"></div>
-    </div>
-
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('pesanan', this)">
-            <i class="bi bi-grid-1x2-fill"></i><span>Pesanan</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('produk', this)">
-            <i class="bi bi-box-seam"></i><span>Produk</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('history', this)">
-            <i class="bi bi-clock-history"></i><span>History</span>
-        </div>
-        <div id="nav-dynamic-item" class="nav-item"></div>
     </div>
 
     <div class="modal fade" id="modalTambahDesa" tabindex="-1">
@@ -128,25 +208,44 @@
 
         let userRole, userDesaId, selectedDesaFilter = 'all';
         var currentTab = 'pesanan';
+        var namaDesa = '';
 
         async function init() {
             const { data: { session } } = await sb.auth.getSession();
             if (!session) return window.location.href = "login.html";
 
             const meta = session.user.user_metadata;
+            const email = session.user.email;
             userRole = meta.role || 'admin_desa';
             userDesaId = meta.desa_id || null;
+            namaDesa = meta.nama_desa || null;
 
-            $('#admin-info').text(session.user.email);
+            $('#admin-display-name').text(meta.nama_desa || email.split('@')[0]);
+            $('#admin-role-badge').text(userRole.toUpperCase().replace('_', ' '));
+            const initial = (meta.nama_desa || email).charAt(0).toUpperCase();
+            $('#avatar-initial').text(initial);
             $('#loader').fadeOut();
 
             if (userRole === 'super_admin') {
                 $('#header-title').text('Admin Asosiasi');
-                $('#nav-dynamic-item').html('<i class="bi bi-buildings"></i><span>Desa</span>').attr('onclick', 'switchTab("desa", this)');
+                $('#nav-dynamic-sidebar').html(`
+                    <div class="px-3 mt-4 mb-2">
+                        <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MASTER DATA</small>
+                    </div>
+                    <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('desa', this)">
+                        <i class="bi bi-buildings"></i> Manajemen Desa
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('master_kategori', this)">
+                        <i class="bi bi-tags"></i> Kategori Produk
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('master_satuan', this)">
+                        <i class="bi bi-unity"></i> Satuan Barang
+                    </a>
+                `);
                 loadDesaFilter();
             } else {
-                $('#header-title').text(`Desa ${userDesaId}`);
-                $('#nav-dynamic-item').remove();
+                $('#header-title').text(`Desa ${namaDesa}`);
+                $('#nav-dynamic-sidebar').remove();
             }
             switchTab('pesanan');
             subscribeOrders();
@@ -181,30 +280,117 @@
         }
 
         async function switchTab(tab, el) {
-            $('.nav-item').removeClass('active');
+            // Reset status aktif di sidebar
+            $('.list-group-item').removeClass('active');
             if(el) $(el).addClass('active');
-            currentTab = tab;
 
+            // Tutup Sidebar otomatis (khusus mobile)
+            const sidebar = bootstrap.Offcanvas.getInstance(document.getElementById('sidebarMenu'));
+            if(sidebar) sidebar.hide();
+
+            currentTab = tab;
+            
+            // Tentukan konten berdasarkan Tab
             if (tab === 'pesanan') {
                 $('#stat-area').show();
-                $('#tab-label').text('Pesanan');
-                if(userRole === 'super_admin') $('#filter-area').show();
+                $('#stat-label').text('Pesanan Masuk');
+                $('#tab-label').text('Pesanan Masuk');
+                $('#filter-area').show();
                 fetchOrders();
             } else if (tab === 'history') {
                 $('#stat-area').show();
-                $('#tab-label').text('History');
-                if(userRole === 'super_admin') $('#filter-area').show();
+                $('#stat-label').text('Transaksi Selesai');
+                $('#tab-label').text('Riwayat Selesai');
+                $('#filter-area').show();
                 fetchOrders();
             } else if (tab === 'produk') {
                 $('#stat-area').hide();
-                $('#tab-label').text('Produk');
+                $('#tab-label').text('Katalog Produk');
                 $('#filter-area').hide();
-                fetchProducts();
-            } else {
+                fetchProducts(); // Panggil fungsi yang tadi kita buat
+            } else if (tab === 'desa') {
                 $('#stat-area').hide();
-                $('#tab-label').text('Manajemen Desa');
+                $('#tab-label').text('Daftar Mitra Desa');
                 $('#filter-area').hide();
                 fetchDesas();
+            } else if (tab === 'master_kategori') {
+                $('#stat-area').hide();
+                $('#tab-label').text('Master Kategori');
+                fetchMasterData('categories', 'Kategori');
+                $('#filter-area').hide();
+            } else if (tab === 'master_satuan') {
+                $('#stat-area').hide();
+                $('#tab-label').text('Master Satuan');
+                fetchMasterData('units', 'Satuan');
+                $('#filter-area').hide();
+            }
+        }
+
+        async function fetchMasterData(table, label) {
+            $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success spinner-border-sm"></div></div>');
+            
+            const { data, error } = await sb.from(table).select('*').order('name');
+            
+            let html = `
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                    <div class="card-body">
+                        <div class="input-group">
+                            <input type="text" id="new-master-name" class="form-control border-0 bg-light" placeholder="Tambah ${label} Baru...">
+                            <button class="btn btn-success" onclick="addMasterData('${table}')"><i class="bi bi-plus-lg"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            (data || []).forEach(item => {
+                html += `
+                    <div class="card border-0 shadow-sm mb-2" style="border-radius: 12px;">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <span class="fw-600" style="font-size: 0.85rem;">${item.name}</span>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-link text-primary p-0" onclick="editMasterData('${table}', '${item.id}', '${item.name}')"><i class="bi bi-pencil-square"></i></button>
+                                <button class="btn btn-link text-danger p-0" onclick="deleteMasterData('${table}', '${item.id}')"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#main-content').html(html || `<p class="text-center py-5">Belum ada data ${label}</p>`);
+        }
+
+        // Fungsi CRUD Master Data
+        async function addMasterData(table) {
+            const name = $('#new-master-name').val();
+            if(!name) return;
+            const { error } = await sb.from(table).insert([{ name }]);
+            if(!error) fetchMasterData(table);
+        }
+
+        async function deleteMasterData(table, id) {
+            const { isConfirmed } = await Swal.fire({
+                title: 'Hapus Data?',
+                text: "Produk dengan kategori/satuan ini mungkin akan terpengaruh.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33'
+            });
+            if (isConfirmed) {
+                await sb.from(table).delete().eq('id', id);
+                fetchMasterData(table);
+            }
+        }
+
+        async function editMasterData(table, id, oldName) {
+            const { value: newName } = await Swal.fire({
+                title: 'Edit Data',
+                input: 'text',
+                inputValue: oldName,
+                showCancelButton: true
+            });
+            if (newName) {
+                await sb.from(table).update({ name: newName }).eq('id', id);
+                fetchMasterData(table);
             }
         }
 
