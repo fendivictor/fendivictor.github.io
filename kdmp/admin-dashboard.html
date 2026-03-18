@@ -131,9 +131,6 @@
                 <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('history', this)">
                     <i class="bi bi-clock-history"></i> Riwayat Transaksi
                 </a>
-                <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('produk', this)">
-                    <i class="bi bi-box-seam"></i> Manajemen Produk
-                </a>
                 
                 <div id="nav-dynamic-sidebar"></div>
 
@@ -230,6 +227,57 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalAnggota" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header border-0 px-4 pt-4">
+                    <h5 class="modal-title fw-800">Form Pendataan Anggota</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4">
+                    <form id="formTambahAnggota">
+                        <div class="mb-3">
+                            <label class="small text-muted fw-bold">Jenis Anggota</label>
+                            <select id="a-jenis" class="form-select bg-light border-0" onchange="toggleWarungField()">
+                                <option value="warga">Warga Biasa</option>
+                                <option value="warung_mitra">Warung Mitra</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="small text-muted fw-bold">NIK KTP (Opsional)</label>
+                            <input type="number" id="a-nik" class="form-control bg-light border-0" placeholder="Contoh: 33190...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="small text-muted fw-bold">Nama Lengkap</label>
+                            <input type="text" id="a-nama" class="form-control bg-light border-0" placeholder="Nama sesuai KTP" required>
+                        </div>
+
+                        <div class="mb-3" id="field-nama-warung" style="display: none;">
+                            <label class="small text-muted fw-bold">Nama Warung / Toko</label>
+                            <input type="text" id="a-warung" class="form-control bg-light border-0" placeholder="Contoh: Warung Berkah">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-12">
+                                <label class="small text-muted fw-bold">No. WhatsApp</label>
+                                <input type="number" id="a-hp" class="form-control bg-light border-0" placeholder="08..." required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="small text-muted fw-bold">Alamat Lengkap</label>
+                            <textarea id="a-alamat" class="form-control bg-light border-0" rows="2" placeholder="RT/RW, Jalan..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-2" style="border-radius: 12px;">Simpan Data Anggota</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -237,6 +285,7 @@
     <script src="js/pages/pesanan.js"></script>
     <script src="js/pages/produk.js"></script>
     <script src="js/pages/master.js"></script>
+    <script src="js/pages/anggota.js"></script>
 
     <script src="js/app.js"></script>
 

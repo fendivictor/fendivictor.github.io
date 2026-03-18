@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pendataan Anggota Koperasi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .form-container { max-width: 600px; margin: 0 auto; padding-top: 5vh; padding-bottom: 5vh; }
+        .form-card { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
+        .form-header { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; padding: 40px 30px; }
+        .form-control, .form-select { border-radius: 12px; padding: 12px 15px; border: 1px solid #dee2e6; background-color: #f8f9fa; }
+        .form-control:focus, .form-select:focus { border-color: #198754; box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25); background-color: white; }
+        label { font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container form-container">
+        <div class="card form-card">
+            <div class="form-header text-center">
+                <i class="bi bi-shop fs-1 mb-3 d-block opacity-75"></i>
+                <h3 class="fw-bold mb-1">Pendataan Mitra & Anggota</h3>
+                <p class="mb-0 opacity-75 small">Koperasi Asosiasi</p>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form id="formPendaftaran">
+                    <div class="mb-4">
+                        <label>Jenis Pendaftaran <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check flex-fill bg-light p-3 rounded-3 border">
+                                <input class="form-check-input ms-1" type="radio" name="jenis_anggota" id="jenis_warga" value="warga" checked onchange="toggleWarung()">
+                                <label class="form-check-label ms-2 mt-1" for="jenis_warga">Warga Biasa</label>
+                            </div>
+                            <div class="form-check flex-fill bg-light p-3 rounded-3 border">
+                                <input class="form-check-input ms-1" type="radio" name="jenis_anggota" id="jenis_warung" value="warung_mitra" onchange="toggleWarung()">
+                                <label class="form-check-label ms-2 mt-1" for="jenis_warung">Warung Mitra</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4" id="field-nama-warung" style="display: none;">
+                        <label>Nama Warung / Toko <span class="text-danger">*</span></label>
+                        <input type="text" id="p-warung" class="form-control" placeholder="Contoh: Warung Barokah Ibu Siti">
+                    </div>
+
+                    <div class="mb-4">
+                        <label>Nama Lengkap (Sesuai KTP) <span class="text-danger">*</span></label>
+                        <input type="text" id="p-nama" class="form-control" placeholder="Masukkan nama lengkap" required>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            <label>Nomor WhatsApp <span class="text-danger">*</span></label>
+                            <input type="number" id="p-hp" class="form-control" placeholder="08..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label>NIK KTP (Opsional)</label>
+                            <input type="number" id="p-nik" class="form-control" placeholder="16 digit angka">
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label>Alamat Lengkap <span class="text-danger">*</span></label>
+                        <textarea id="p-alamat" class="form-control" rows="3" placeholder="RT/RW, Nama Jalan, Dusun..." required></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" style="border-radius: 15px;">
+                        Kirim Formulir
+                    </button>
+                </form>
+
+                <div id="success-message" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    <h4 class="fw-bold mt-4">Pendaftaran Berhasil!</h4>
+                    <p class="text-muted">Terima kasih telah mengisi pendataan. Data Anda telah masuk ke sistem kami.</p>
+                    <button class="btn btn-outline-success mt-3 px-4" onclick="location.reload()" style="border-radius: 12px;">Isi Form Lagi</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // INISIALISASI SUPABASE
+        const config = {
+            url: 'https://fsbtlscplnmdyomtesal.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w' // Gunakan Anon Key kamu di sini
+        };
+        const sb = window.supabase.createClient(config.url, config.key);
+
+        // 2. Logic Tampil/Sembunyi Field Warung
+        function toggleWarung() {
+            const isWarung = $('#jenis_warung').is(':checked');
+            if (isWarung) {
+                $('#field-nama-warung').slideDown();
+                $('#p-warung').prop('required', true);
+            } else {
+                $('#field-nama-warung').slideUp();
+                $('#p-warung').prop('required', false).val('');
+            }
+        }
+
+        // 3. Proses Submit Form
+        $('#formPendaftaran').on('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = $('#btn-submit');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Mengirim...');
+
+            const payload = {
+                jenis_anggota: $('input[name="jenis_anggota"]:checked').val(),
+                nama_warung: $('#p-warung').val() || null,
+                nama_lengkap: $('#p-nama').val(),
+                no_hp: $('#p-hp').val(),
+                nik: $('#p-nik').val() || null,
+                alamat: $('#p-alamat').val()
+            };
+
+            const { error } = await sb.from('anggota_koperasi').insert([payload]);
+
+            if (error) {
+                Swal.fire('Opps!', error.message, 'error');
+                btn.prop('disabled', false).html('Kirim Formulir');
+            } else {
+                // Sembunyikan form, tampilkan pesan sukses
+                $('#formPendaftaran').fadeOut(300, function() {
+                    $('#success-message').fadeIn();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -29,6 +29,9 @@ async function init() {
             <div class="px-3 mt-4 mb-2">
                 <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MASTER DATA</small>
             </div>
+            <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('produk', this)">
+                    <i class="bi bi-box-seam"></i> Manajemen Produk
+                </a>
             <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('desa', this)">
                 <i class="bi bi-buildings"></i> Manajemen Desa
             </a>
@@ -37,6 +40,9 @@ async function init() {
             </a>
             <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('master_satuan', this)">
                 <i class="bi bi-unity"></i> Satuan Barang
+            </a>
+            <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('anggota', this)">
+                <i class="bi bi-people me-3 fs-5"></i> Data Anggota
             </a>
         `);
         loadDesaFilter();
@@ -71,6 +77,7 @@ function switchTab(tab, el) {
         case 'master_kategori': MasterPage.init('categories'); break;
         case 'master_satuan':   MasterPage.init('units'); break;
         case 'desa':           MasterPage.initDesa(); break;
+        case 'anggota': AnggotaPage.init(); break;
     }
 }
 
