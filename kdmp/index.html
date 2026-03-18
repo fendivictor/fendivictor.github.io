@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    
     <style>
         :root { --primary: #198754; --bg: #f8faf9; --card: #ffffff; }
         [data-bs-theme="dark"] { --bg: #121212; --card: #1e1e1e; }
@@ -19,60 +18,24 @@
         .navbar-main { background-color: var(--primary); color: white; padding: 12px 15px; position: sticky; top: 0; z-index: 1030; }
         
         .header-sticky { position: sticky; top: 54px; z-index: 1020; background: var(--card); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .nav-link { white-space: nowrap; border-radius: 8px !important; font-size: 0.8rem; font-weight: 600; color: #666; background: var(--card); border: 1px solid #eee !important; margin-right: 8px; }
-        .nav-link.active { background-color: var(--primary) !important; color: white !important; }
-        
-        .product-item { background: var(--card); border-radius: 15px; border: none; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; }
-        .thumb-mini { width: 85px; height: 85px; object-fit: cover; border-radius: 12px; }
+        .product-item { background: var(--card); border-radius: 20px; border: none; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); overflow: hidden; }
         
         .qty-wrapper { background: #f8fcf9; border-radius: 10px; display: flex; align-items: center; border: 1px solid #e2eee7; padding: 2px; }
-        .btn-qty { width: 30px; height: 30px; border: none; background: white; border-radius: 8px; font-weight: bold; }
+        .btn-qty { width: 32px; height: 32px; border: none; background: white; border-radius: 8px; font-weight: bold; font-size: 1.1rem; color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .btn-qty:active { transform: scale(0.95); }
         
         .sticky-bottom-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); padding: 15px 20px; z-index: 1000; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 20px rgba(0,0,0,0.08); }
         #map { height: 180px; width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid #eee; }
 
-        /* Tombol Ganti Desa yang Menarik Perhatian */
-        .btn-ganti-desa {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            backdrop-filter: blur(5px);
-            transition: 0.3s;
-        }
+        .btn-ganti-desa { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; backdrop-filter: blur(5px); }
         .btn-ganti-desa:hover { background: white; color: var(--primary); }
 
-        /* Kategori yang Lebih Besar & Nyaman Ditekan */
-        .nav-pills-custom {
-            display: flex;
-            overflow-x: auto;
-            padding: 15px;
-            gap: 12px;
-            scrollbar-width: none;
-        }
+        .nav-pills-custom { display: flex; overflow-x: auto; padding: 15px; gap: 12px; scrollbar-width: none; }
         .nav-pills-custom::-webkit-scrollbar { display: none; }
-
-        .cat-link {
-            white-space: nowrap;
-            border-radius: 15px !important;
-            padding: 12px 24px !important; /* Ukuran lebih besar */
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #444;
-            background: var(--card);
-            border: 2px solid #eee !important; /* Border lebih tebal */
-            transition: 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-        .cat-link.active {
-            background-color: var(--primary) !important;
-            color: white !important;
-            border-color: var(--primary) !important;
-            transform: scale(1.05); /* Efek sedikit membesar saat aktif */
-        }
+        .cat-link { white-space: nowrap; border-radius: 15px !important; padding: 10px 20px !important; font-size: 0.85rem; font-weight: 700; color: #444; background: var(--card); border: 2px solid #eee !important; transition: 0.2s; }
+        .cat-link.active { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
+        
+        .variant-row { background-color: #f8f9fa; border-radius: 12px; padding: 10px 15px; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -85,7 +48,7 @@
                         <i class="bi bi-geo-alt-fill text-success fs-1"></i>
                     </div>
                     <h5 class="fw-800">Selamat Datang</h5>
-                    <p class="text-muted small">Silakan pilih lokasi desa Anda untuk mulai berbelanja di mitra terdekat.</p>
+                    <p class="text-muted small">Pilih lokasi desa Anda untuk melihat stok barang.</p>
                     <select id="select-desa" class="form-select form-select-lg mb-3 rounded-3" style="font-size: 1rem;">
                         <option value="" selected disabled>Memuat desa...</option>
                     </select>
@@ -116,15 +79,12 @@
     <div class="header-sticky">
         <div class="p-3 pb-0">
             <div class="position-relative">
-                <i class="bi bi-search position-absolute" style="left: 15px; top: 12px; color: #888;"></i>
+                <i class="bi bi-search position-absolute" style="left: 15px; top: 7px; color: #888;"></i>
                 <input type="text" id="searchInput" class="form-control border-0 ps-5 py-2" placeholder="Cari beras, pupuk, dll..." style="background: #f1f3f2; border-radius: 12px; font-size: 0.95rem;">
             </div>
         </div>
         <div class="nav-pills-custom" id="pills-tab">
-            <button class="cat-link active" onclick="filterCat('Semua', this)">🛍️ Semua</button>
-            <button class="cat-link" onclick="filterCat('Sembako', this)">🍚 Sembako</button>
-            <button class="cat-link" onclick="filterCat('Pupuk', this)">🌱 Pupuk</button>
-            <button class="cat-link" onclick="filterCat('Alat Tani', this)">🛠️ Alat Tani</button>
+            <button class="cat-link active">Memuat...</button>
         </div>
     </div>
 
@@ -137,14 +97,15 @@
                 <p class="text-muted mb-0 small">Estimasi Total</p>
                 <span id="grand-total" class="fw-800 text-success fs-4">Rp 0</span>
             </div>
-            <button class="btn btn-success px-4 py-2 fw-bold" id="btn-lanjut" disabled style="border-radius: 12px;">
+            <button class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btn-lanjut" disabled style="border-radius: 12px;">
                 Pesan (<span id="count-items">0</span>)
             </button>
         </div>
     </div>
 
     <div class="modal fade" id="modalIdentitas" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered"> <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+        <div class="modal-dialog modal-dialog-centered"> 
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
                 <div class="modal-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-800 mb-0">Detail Pengiriman</h6>
@@ -174,7 +135,7 @@
                         
                         <div id="section-lokasi">
                             <label class="small fw-bold mb-1">Titik Lokasi Pengiriman</label>
-                            <div id="map" style="height: 200px; border-radius: 15px; border: 2px solid #eee;"></div>
+                            <div id="map"></div>
                             <input type="hidden" name="coords" id="cust-coords">
                             
                             <div class="mt-2">
@@ -195,71 +156,268 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        const sb = window.supabase.createClient('https://fsbtlscplnmdyomtesal.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w');
+        // CONFIG SUPABASE
+        const config = {
+            url: 'https://fsbtlscplnmdyomtesal.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w' // Ganti dengan Anon Key kamu yang bersih
+        };
+        const sb = window.supabase.createClient(config.url, config.key);
 
-        let products = [], cart = {}, currentCat = 'Semua', map, marker;
+        let groupedProducts = []; 
+        let cart = {}; // Format baru: cart[variant_id] = { qty, price, name, variant_id }
+        let currentCat = 'Semua', map, marker;
         let selectedDesa = localStorage.getItem('user_desa');
+        let namaDesaCache = localStorage.getItem('user_nama_desa');
 
         async function init() {
-            // Load Desas for Modal
-            const { data: desas } = await sb.from('desas').select('id, nama_desa');
+            const { data: desas } = await sb.from('desas').select('id, nama_desa').order('nama_desa');
             let opt = '<option value="" disabled selected>Pilih Nama Desa...</option>';
-            desas.forEach(d => opt += `<option value="${d.id}">${d.nama_desa}</option>`);
+            if(desas) desas.forEach(d => opt += `<option value="${d.id}" data-nama="${d.nama_desa}">${d.nama_desa}</option>`);
             $('#select-desa').html(opt);
 
             if (!selectedDesa) {
                 new bootstrap.Modal('#modalPilihDesa').show();
             } else {
-                $('#display-desa').text('Mitra: ' + selectedDesa);
+                $('#display-desa').text('Mitra: ' + (namaDesaCache || 'Desa'));
                 fetchProducts();
             }
         }
 
         function setDesa() {
-            const val = $('#select-desa').val();
+            const selectEl = document.getElementById('select-desa');
+            const val = selectEl.value;
             if(!val) return;
-            selectedDesa = val;
+            
+            const namaDesa = selectEl.options[selectEl.selectedIndex].getAttribute('data-nama');
             localStorage.setItem('user_desa', val);
+            localStorage.setItem('user_nama_desa', namaDesa);
             location.reload();
         }
 
+        // FUNGSI FETCH LANGSUNG DARI KATALOG PUSAT (PRODUCT_VARIANTS)
         async function fetchProducts() {
-            const { data } = await sb.from('products').select('*');
-            products = data || [];
+            $('#product-list').html('<div class="text-center py-5"><div class="spinner-border text-success"></div></div>');
+
+            // Query diubah: Langsung ke product_variants, abaikan inventory desa
+            const { data, error } = await sb.from('product_variants')
+                .select(`
+                    id, 
+                    harga_jual, 
+                    units (name), 
+                    products (id, name, categories(name), image_url)
+                `);
+
+            if (error || !data) {
+                return $('#product-list').html('<div class="text-center py-5 text-danger">Gagal memuat katalog pusat.</div>');
+            }
+
+            let tempGroup = {};
+            let availableCategories = new Set(); 
+
+            console.log('Data product_variants:', data);    
+
+            // Looping data (strukturnya sedikit berbeda karena tidak lewat inventory lagi)
+            data.forEach(pv => {
+                if(!pv.products) return;
+
+                const pId = pv.products.id;
+                const catName = pv.products.categories?.name || 'Umum';
+                
+                availableCategories.add(catName);
+
+                if (!tempGroup[pId]) {
+                    tempGroup[pId] = {
+                        id: pId,
+                        name: pv.products.name,
+                        category: catName,
+                        image: pv.products.image_url,
+                        variants: []
+                    };
+                }
+                
+                tempGroup[pId].variants.push({
+                    variant_id: pv.id, // Ini ID varian untuk masuk ke keranjang
+                    unit_name: pv.units.name,
+                    price: pv.harga_jual
+                    // Parameter stok dihapus karena ini katalog global
+                });
+            });
+
+            groupedProducts = Object.values(tempGroup);
+            
+            renderCategories(Array.from(availableCategories));
             renderProducts();
         }
 
+        // FUNGSI FETCH MULTIVARIANT (Ambil dari Inventory Desa)
         function renderProducts() {
             const search = $('#searchInput').val().toLowerCase();
             let html = '';
-            products.filter(p => (currentCat === 'Semua' || p.category === currentCat) && p.name.toLowerCase().includes(search)).forEach(p => {
-                const qty = cart[p.id] || 0;
-                html += `<div class="card product-item p-2"><div class="d-flex align-items-center">
-                    <img src="${p.image_url}" class="thumb-mini me-3">
-                    <div class="flex-grow-1"><div class="fw-bold small">${p.name} #${p.unit}</div><div class="text-success fw-800 small">Rp ${p.price.toLocaleString()}</div></div>
-                    <div class="qty-wrapper">
-                        <button class="btn-qty" onclick="changeQty('${p.id}', -1)">-</button>
-                        <input type="text" readonly class="text-center border-0 fw-bold" style="width:30px; background:transparent" value="${qty}" id="q-${p.id}">
-                        <button class="btn-qty" onclick="changeQty('${p.id}', 1)">+</button>
+            
+            groupedProducts.filter(p => 
+                (currentCat === 'Semua' || p.category === currentCat) && 
+                p.name.toLowerCase().includes(search)
+            ).forEach(p => {
+                
+                let variantHtml = '';
+                p.variants.forEach(v => {
+                    const qty = cart[v.variant_id] ? cart[v.variant_id].qty : 0;
+                    const itemName = `${p.name} - ${v.unit_name}`;
+                    
+                    variantHtml += `
+                        <div class="variant-row d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.85rem;">${v.unit_name}</div>
+                                <div class="text-success fw-800" style="font-size: 0.95rem;">Rp ${v.price.toLocaleString()}</div>
+                                </div>
+                            <div class="qty-wrapper">
+                                <button class="btn-qty" onclick="updateQty('${v.variant_id}', -1, ${v.price}, '${itemName}')"><i class="bi bi-dash"></i></button>
+                                <input type="text" readonly class="text-center border-0 fw-bold px-1" style="width:30px; background:transparent" value="${qty}" id="q-${v.variant_id}">
+                                <button class="btn-qty" onclick="updateQty('${v.variant_id}', 1, ${v.price}, '${itemName}')"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                <div class="card product-item p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-success-subtle rounded p-2 me-3 d-flex align-items-center justify-content-center text-success" style="width: 45px; height: 45px;">
+                            <i class="bi bi-box-seam fs-4"></i>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-secondary border mb-1" style="font-size:0.6rem;">${p.category}</span>
+                            <h6 class="fw-bold mb-0">${p.name}</h6>
+                        </div>
                     </div>
-                </div></div>`;
+                    <div class="mt-2">
+                        ${variantHtml}
+                    </div>
+                </div>`;
             });
+
             $('#product-list').html(html || '<div class="text-center py-5 opacity-50 small">Produk belum tersedia di desa ini</div>');
         }
 
-        window.changeQty = (id, delta) => {
-            cart[id] = Math.max(0, (cart[id] || 0) + delta);
-            $(`#q-${id}`).val(cart[id]);
+        // FUNGSI RENDER TABS KATEGORI
+        function renderCategories(categories) {
+            // Jika kategori yang sedang aktif tidak ada di desa ini (misal habis ganti desa), reset ke 'Semua'
+            if (currentCat !== 'Semua' && !categories.includes(currentCat)) {
+                currentCat = 'Semua';
+            }
+
+            // Selalu tampilkan tab 'Semua' di urutan pertama
+            let html = `<button class="cat-link ${currentCat === 'Semua' ? 'active' : ''}" onclick="filterCat('Semua', this)">🛍️ Semua</button>`;
+
+            // Mapper emoji opsional agar tampilan tetap menarik meskipun dinamis
+            const iconMap = {
+                'Sembako': '🍚',
+                'Pupuk': '🌱',
+                'Alat Tani': '🛠️',
+                'Sayuran': '🥬',
+                'Buah': '🍎',
+                'Obat': '💊',
+                'Umum': '📦'
+            };
+
+            // Urutkan kategori sesuai abjad lalu buat tombolnya
+            categories.sort().forEach(cat => {
+                const icon = iconMap[cat] || '🏷️'; // Gunakan icon default jika tidak ada di mapper
+                const isActive = currentCat === cat ? 'active' : '';
+                html += `<button class="cat-link ${isActive}" onclick="filterCat('${cat}', this)">${icon} ${cat}</button>`;
+            });
+
+            $('#pills-tab').html(html);
+        }
+
+        // RENDER PRODUK DAN VARIANNYA
+        function renderProducts() {
+            const search = $('#searchInput').val().toLowerCase();
+            let html = '';
+            
+            groupedProducts.filter(p => 
+                (currentCat === 'Semua' || p.category === currentCat) && 
+                p.name.toLowerCase().includes(search)
+            ).forEach(p => {
+                
+                let variantHtml = '';
+                p.variants.forEach(v => {
+                    const qty = cart[v.variant_id] ? cart[v.variant_id].qty : 0;
+                    const itemName = `${p.name} - ${v.unit_name}`;
+                    
+                    variantHtml += `
+                        <div class="variant-row d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.85rem;">${v.unit_name}</div>
+                                <div class="text-success fw-800" style="font-size: 0.95rem;">Rp ${v.price.toLocaleString()}</div>
+                            </div>
+                            <div class="qty-wrapper">
+                                <button class="btn-qty" onclick="updateQty('${v.variant_id}', -1, ${v.price}, '${itemName}', ${v.stock})"><i class="bi bi-dash"></i></button>
+                                <input type="text" readonly class="text-center border-0 fw-bold px-1" style="width:30px; background:transparent" value="${qty}" id="q-${v.variant_id}">
+                                <button class="btn-qty" onclick="updateQty('${v.variant_id}', 1, ${v.price}, '${itemName}', ${v.stock})"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                <div class="card product-item p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="${p.image || 'https://placehold.co/45x45?text=No+Image'}" alt="${p.name}" class="rounded me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                        <div>
+                            <span class="badge bg-light text-secondary border mb-1" style="font-size:0.6rem;">${p.category}</span>
+                            <h6 class="fw-bold mb-0">${p.name}</h6>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        ${variantHtml}
+                    </div>
+                </div>`;
+            });
+
+            $('#product-list').html(html || '<div class="text-center py-5 opacity-50 small">Produk belum tersedia di desa ini</div>');
+        }
+
+        // UPDATE CART LOGIC
+        // maxStock parameter dihapus
+        window.updateQty = (variantId, delta, price, itemName) => {
+            if (!cart[variantId]) {
+                cart[variantId] = { qty: 0, price: price, name: itemName, id: variantId };
+            }
+            
+            let newQty = cart[variantId].qty + delta;
+            
+            // Validasi: hanya tidak boleh minus
+            if (newQty < 0) newQty = 0;
+
+            // Block alert limit stok dihapus
+
+            cart[variantId].qty = newQty;
+            $(`#q-${variantId}`).val(newQty);
+
+            // Jika Qty 0, hapus dari object cart
+            if (newQty === 0) delete cart[variantId];
+
+            calculateTotal();
+        }
+
+        function calculateTotal() {
             let total = 0, count = 0;
-            products.forEach(p => { if(cart[p.id]) { total += p.price * cart[p.id]; count += cart[p.id]; }});
+            Object.values(cart).forEach(item => {
+                total += item.price * item.qty;
+                count += item.qty;
+            });
             $('#grand-total').text('Rp ' + total.toLocaleString());
             $('#count-items').text(count);
             $('#btn-lanjut').prop('disabled', count === 0);
         }
 
+        // PENCARIAN & FILTER KATEGORI
+        $('#searchInput').on('input', renderProducts);
         window.filterCat = (cat, el) => { 
             currentCat = cat; 
             $('.cat-link').removeClass('active'); 
@@ -267,68 +425,75 @@
             renderProducts(); 
         }
 
-        // Submit Pesanan
+        // SUBMIT PESANAN
         $('#formPesanan').submit(async function(e) {
             e.preventDefault();
             const btn = $('#btn-kirim');
             btn.prop('disabled', true).text('Mengirim...');
 
-            const items = products.filter(p => cart[p.id] > 0).map(p => ({ name: p.name, qty: cart[p.id], sub: p.price * cart[p.id] }));
-            const total = items.reduce((a, b) => a + b.sub, 0);
+            // Mapping cart object ke array untuk database
+            const itemsArray = Object.values(cart).map(item => ({ 
+                variant_id: item.id,
+                name: item.name, 
+                qty: item.qty, 
+                sub: item.price * item.qty 
+            }));
+            
+            const total = itemsArray.reduce((sum, item) => sum + item.sub, 0);
 
-            const { error } = await sb.from('orders').insert([{
+            const payload = {
                 customer_name: $('input[name="nama"]').val(),
                 whatsapp: $('input[name="whatsapp"]').val(),
                 coords: $('#cust-coords').val(),
                 address: $('textarea[name="alamat"]').val(),
-                items: items,
+                items: itemsArray, // JSONB structure
                 total_price: total,
                 desa_id: selectedDesa,
-                status: 'pending'
-            }]);
+                status: 'Pesanan Masuk' // Sesuai dengan status badge Admin
+            };
+
+            const { error } = await sb.from('orders').insert([payload]);
 
             if(!error) {
-                Swal.fire('Sukses!', 'Pesanan sedang diproses.', 'success').then(() => location.reload());
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pesanan Terkirim!',
+                    text: 'Admin desa akan segera memproses pesanan Anda.',
+                    confirmButtonText: 'Tutup'
+                }).then(() => location.reload());
             } else {
-                alert(error.message);
-                btn.prop('disabled', false).text('KONFIRMASI');
+                Swal.fire('Gagal', error.message, 'error');
+                btn.prop('disabled', false).text('KONFIRMASI PESANAN');
             }
         });
 
+        // LOGIKA MAP & METODE PENGIRIMAN
         $(document).ready(function() {
-            // Logika ganti metode (Antar/Ambil)
             $(document).on('change', 'input[name="metode"]', function() {
                 if (this.value === 'ambil') {
-                    $('#section-lokasi').slideUp(); // Sembunyikan Map & Alamat
-                    $('#cust-coords').val('Ambil Sendiri'); // Isi dummy value agar tidak kosong di DB
+                    $('#section-lokasi').slideUp();
+                    $('#cust-coords').val('Ambil Sendiri');
                 } else {
                     $('#section-lokasi').slideDown(function() {
-                        if (map) map.invalidateSize(); // Perbaiki tampilan map saat muncul lagi
+                        if (map) map.invalidateSize();
                     });
                 }
             });
 
-            // Inisialisasi Map saat modal dibuka
             $('#modalIdentitas').on('shown.bs.modal', function () {
                 if (!map) {
-                    // Default Semarang / Tengah Jawa
                     map = L.map('map').setView([-7.0051, 110.4381], 15);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
                     marker = L.marker([-7.0051, 110.4381], {draggable: true}).addTo(map);
                     
-                    marker.on('dragend', function() {
-                        const p = marker.getLatLng();
-                        $('#cust-coords').val(`${p.lat},${p.lng}`);
-                    });
+                    marker.on('dragend', () => $('#cust-coords').val(marker.getLatLng().lat + ',' + marker.getLatLng().lng));
 
-                    // Coba ambil lokasi GPS user
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition((pos) => {
-                            const lat = pos.coords.latitude;
-                            const lng = pos.coords.longitude;
-                            map.setView([lat, lng], 17);
-                            marker.setLatLng([lat, lng]);
-                            $('#cust-coords').val(`${lat},${lng}`);
+                            const c = [pos.coords.latitude, pos.coords.longitude];
+                            map.setView(c, 17);
+                            marker.setLatLng(c);
+                            $('#cust-coords').val(c.join(','));
                         });
                     }
                 } else {
@@ -337,24 +502,10 @@
             });
         });
 
-        // Map Initialization
-        $('#btn-lanjut').click(() => {
-            new bootstrap.Modal('#modalIdentitas').show();
-            setTimeout(() => {
-                if(!map) {
-                    map = L.map('map').setView([-7.0, 110.4], 15);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                    marker = L.marker([-7.0, 110.4], {draggable: true}).addTo(map);
-                    marker.on('dragend', () => $('#cust-coords').val(marker.getLatLng().lat + ',' + marker.getLatLng().lng));
-                    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
-                        const c = [p.coords.latitude, p.coords.longitude];
-                        map.setView(c, 17); marker.setLatLng(c); $('#cust-coords').val(c[0]+','+c[1]);
-                    });
-                }
-            }, 500);
-        });
-
-        function resetDesa() { localStorage.removeItem('user_desa'); location.reload(); }
+        $('#btn-lanjut').click(() => new bootstrap.Modal('#modalIdentitas').show());
+        function resetDesa() { localStorage.removeItem('user_desa'); localStorage.removeItem('user_nama_desa'); location.reload(); }
+        
+        // Mulai aplikasi
         $(document).ready(init);
     </script>
 </body>
