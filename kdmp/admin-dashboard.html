@@ -121,7 +121,7 @@
 
         <div class="offcanvas-body p-0">
             <div class="px-3 mt-2 mb-3">
-                <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MENU UTAMA</small>
+                <small class="text-light fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MENU UTAMA</small>
             </div>
             
             <div class="list-group list-group-flush">
@@ -133,10 +133,6 @@
                 </a>
                 
                 <div id="nav-dynamic-sidebar"></div>
-
-                <div class="px-3 mt-4 mb-2">
-                    <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">SISTEM</small>
-                </div>
                 
                 <a href="#" class="list-group-item list-group-item-action bg-transparent text-danger py-3" onclick="handleLogout()">
                     <i class="bi bi-box-arrow-right"></i> Keluar Akun
@@ -180,10 +176,18 @@
                 </div>
                 <div class="modal-body">
                     <form id="formTambahDesa">
-                        <div class="mb-2"><label class="small fw-bold">Nama Desa</label><input type="text" id="new_nama_desa" class="form-control" required></div>
-                        <div class="mb-2"><label class="small fw-bold">ID Desa</label><input type="text" id="new_id_desa" class="form-control" placeholder="desa-abc" required></div>
-                        <div class="mb-2"><label class="small fw-bold">Email Admin</label><input type="email" id="new_email_desa" class="form-control" required></div>
-                        <div class="mb-3"><label class="small fw-bold">Password</label><input type="password" id="new_password_desa" class="form-control" required></div>
+                        <div class="mb-2">
+                            <label class="small fw-bold">Nama Desa</label>
+                            <input type="text" id="new_nama_desa" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="small fw-bold">Email Admin</label>
+                            <input type="email" id="new_email_desa" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-bold">Password</label>
+                            <input type="password" id="new_password_desa" class="form-control" required>
+                        </div>
                         <button type="submit" class="btn btn-success w-100 fw-bold">SIMPAN & AKTIFKAN</button>
                     </form>
                 </div>

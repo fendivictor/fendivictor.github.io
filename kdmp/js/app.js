@@ -1,7 +1,7 @@
 // app.js
 const config = {
     url: 'https://fsbtlscplnmdyomtesal.supabase.co',
-    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w'
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzYnRsc2NwbG5tZHlvbXRlc2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NzAyMzUsImV4cCI6MjA4OTA0NjIzNX0.XJVWGucUvuKotVN2l2glzMHU400K6nhdIkmWm-oGo6w',
 };
 
 const sb = window.supabase.createClient(config.url, config.key);
@@ -27,7 +27,7 @@ async function init() {
         $('#header-title').text('Admin Asosiasi');
         $('#nav-dynamic-sidebar').html(`
             <div class="px-3 mt-4 mb-2">
-                <small class="text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MASTER DATA</small>
+                <small class="text-light fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">MASTER DATA</small>
             </div>
             <a href="#" class="list-group-item list-group-item-action bg-transparent text-white py-3" onclick="switchTab('produk', this)">
                     <i class="bi bi-box-seam"></i> Manajemen Produk

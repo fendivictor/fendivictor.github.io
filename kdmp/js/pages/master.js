@@ -2,6 +2,7 @@ const MasterPage = {
     init: async function(title) {
         $('#stat-area').hide();
         $('#filter-area').hide();
+        $('#button-add-data').empty();
 
         if (title === 'categories') {
             $('#tab-label').text('Master Kategori');
@@ -102,6 +103,7 @@ const MasterPage = {
 
         let html = '';
         desas.forEach(d => {
+            const shortId = d.id.split('-')[0];
             html += `
             <div class="card desa-card border-0 shadow-sm mb-2">
                 <div class="card-body p-3 d-flex align-items-center">
@@ -110,30 +112,156 @@ const MasterPage = {
                     </div>
                     <div class="flex-grow-1">
                         <h6 class="fw-bold mb-0">${d.nama_desa}</h6>
-                        <small class="text-muted" style="font-size: 0.75rem;">ID: ${d.id} | ${d.admin_email}</small>
+                        <small class="text-muted" style="font-size: 0.75rem;">ID: ${shortId} | ${d.admin_email}</small>
                     </div>
-                    <i class="bi bi-chevron-right text-muted"></i>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-link text-primary p-0" onclick="MasterPage.editDesa('${d.id}', '${d.nama_desa}', '${d.auth_uid}', '${d.admin_email}')">
+                            <i class="bi bi-pencil-square fs-5"></i>
+                        </button>
+                        <button class="btn btn-link text-danger p-0" onclick="MasterPage.deleteDesa('${d.id}', '${d.nama_desa}', '${d.auth_uid || ''}')">
+                            <i class="bi bi-trash fs-5"></i>
+                        </button>
+                    </div>
                 </div>
             </div>`;
         });
         $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Belum ada desa terdaftar</p>');
+    },
+
+    editDesa: async function(id, oldName, authUid, oldEmail) {
+        const { value: formValues } = await Swal.fire({
+            title: 'Edit Mitra Desa',
+            html: `
+                <div class="text-start">
+                    <label class="small text-muted fw-bold">Nama Desa</label>
+                    <input id="swal-nama" type="text" class="form-control mb-3" value="${oldName}">
+                    
+                    <hr class="opacity-25">
+                    <small class="text-danger d-block mb-2">*Isi bagian bawah ini hanya jika ingin mengganti akses login</small>
+                    
+                    <label class="small text-muted fw-bold">Email Baru</label>
+                    <input id="swal-email" type="email" class="form-control mb-2" value="${oldEmail}">
+                    
+                    <label class="small text-muted fw-bold">Password Baru</label>
+                    <input id="swal-pass" type="password" class="form-control" placeholder="Minimal 6 karakter (Kosongkan jika tidak diganti)">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Update Data',
+            preConfirm: () => {
+                return {
+                    nama: document.getElementById('swal-nama').value,
+                    email: document.getElementById('swal-email').value,
+                    pass: document.getElementById('swal-pass').value
+                }
+            }
+        });
+
+        if (formValues) {
+            Swal.showLoading();
+            
+            try {
+                // 1. Update Auth di Supabase (Email & Password)
+                if (authUid && authUid !== 'null' && authUid.trim() !== '') {
+                    const updateData = { email: formValues.email };
+                    
+                    // Validasi khusus password Supabase (Minimal 6 karakter)
+                    if (formValues.pass) {
+                        if (formValues.pass.length < 6) {
+                            throw new Error("Password baru minimal harus 6 karakter!");
+                        }
+                        updateData.password = formValues.pass;
+                    }
+
+                    // Wajib menggunakan sbAdmin dengan Service Role Key
+                    const { error: authError } = await sbAdmin.auth.admin.updateUserById(
+                        authUid, 
+                        updateData
+                    );
+                    if (authError) throw authError;
+                }
+
+                // 2. Update Data di tabel public.desas
+                const { error: dbError } = await sb.from('desas')
+                    .update({ nama_desa: formValues.nama, admin_email: formValues.email })
+                    .eq('id', id);
+                if (dbError) throw dbError;
+
+                Swal.fire({ icon: 'success', title: 'Berhasil Diupdate', timer: 1500, showConfirmButton: false });
+                this.fetchDesas(); 
+            } catch (err) {
+                Swal.fire('Gagal', err.message, 'error');
+            }
+        }
+    },
+
+    deleteDesa: async function(id, nama, authUid) {
+        const { isConfirmed } = await Swal.fire({
+            title: 'Hapus Mitra Desa?',
+            text: `Semua akses login dan operasional untuk ${nama} akan dihapus permanen. Lanjutkan?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Hapus!'
+        });
+
+        if (isConfirmed) {
+            Swal.showLoading();
+            
+            try {
+                // 1. Hapus Akun Login dari auth.users Supabase (Wajib Service Role Key)
+                if (authUid && authUid !== 'null' && authUid.trim() !== '') {
+                    const { error: authErr } = await sbAdmin.auth.admin.deleteUser(authUid);
+                    if (authErr) throw authErr;
+                }
+
+                // 2. Hapus Data dari tabel public.desas
+                const { error: dbErr } = await sb.from('desas').delete().eq('id', id);
+                if (dbErr) {
+                    if (dbErr.code === '23503') {
+                        throw new Error('Desa ini sudah memiliki data transaksi/stok. Hapus data terkait terlebih dahulu atau ubah statusnya menjadi nonaktif.');
+                    }
+                    throw dbErr;
+                }
+                
+                Swal.fire({ icon: 'success', title: 'Terhapus', text: 'Mitra Desa dan Akun Login berhasil dihapus.', timer: 2000, showConfirmButton: false });
+                this.fetchDesas();
+                if(typeof this.loadDesaFilter === 'function') this.loadDesaFilter();
+            } catch (err) {
+                Swal.fire('Gagal Hapus', err.message, 'error');
+            }
+        }
     }
 };
 
 $(document).on('submit', '#formTambahDesa', async function(e) {
     e.preventDefault();
-    const email = $('#new_email_desa').val(), pass = $('#new_password_desa').val(), id = $('#new_id_desa').val(), nama = $('#new_nama_desa').val();
+    const generatedDesaId = crypto.randomUUID();
+    const email = $('#new_email_desa').val(), 
+    pass = $('#new_password_desa').val(), 
+    nama = $('#new_nama_desa').val();
     
     try {
-        const { error: authErr } = await sbAdmin.auth.signUp({ email, password: pass, options: { data: { role: 'admin_desa', desa_id: id } } });
+        const { data: authData, error: authErr } = await sbAdmin.auth.signUp({ 
+            email: email, 
+            password: pass, 
+            options: { data: { role: 'admin_desa', desa_id: generatedDesaId, nama_desa: nama } } 
+        });
         if (authErr) throw authErr;
-        const { error: dbErr } = await sb.from('desas').insert([{ id, nama_desa: nama, admin_email: email }]);
+        
+        const newAuthUid = authData.user.id;
+        const { error: dbErr } = await sb.from('desas').insert([{ 
+            id: generatedDesaId, 
+            nama_desa: nama, 
+            admin_email: email,
+            auth_uid: newAuthUid
+        }]);
         if (dbErr) throw dbErr;
 
         Swal.fire('Berhasil!', `Desa ${nama} telah aktif.`, 'success');
         $('#modalTambahDesa').modal('hide');
         this.reset();
         MasterPage.fetchDesas();
-        MasterPage.loadDesaFilter(); // Refresh dropdown
     } catch (err) { Swal.fire('Gagal', err.message, 'error'); }
 });
