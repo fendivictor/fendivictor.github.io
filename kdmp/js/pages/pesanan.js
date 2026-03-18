@@ -1,8 +1,10 @@
+let currentOrderData = null;
 const PesananPage = {
     init: function(mode) {
         $('#tab-label').text(mode === 'history' ? 'Riwayat Selesai' : 'Pesanan Masuk');
         $('#stat-area').show();
-        this.fetchOrders(mode);
+        $('#button-add-data').empty();
+        this.fetchPesanan(mode);
     },
 
     fetchOrders: async function(mode) {
@@ -171,6 +173,211 @@ const PesananPage = {
                     fetchOrders();
                 }
             }
+        }
+    },
+
+    fetchPesanan: async function(mode) {
+        $('#main-content').html('<div class="text-center py-5"><div class="spinner-border text-success"></div></div>');
+
+        let q = sb.from('orders').select('*');
+        if (userRole !== 'super_admin') q = q.eq('desa_id', userDesaId);
+
+        if (mode === 'history') q = q.in('status', ['Selesai', 'Dibatalkan']);
+        else q = q.not('status', 'in', '("Selesai","Dibatalkan")');
+
+        // Tarik pesanan khusus desa ini
+        const { data: orders, error } = await q
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) return $('#main-content').html(`<p class="text-danger text-center py-5">${error.message}</p>`);
+
+        let html = '';
+        let total = 0;
+        let count = 0;
+        (orders || []).forEach(o => {
+            let badgeColor = o.status === 'Pesanan Masuk' ? 'bg-warning text-dark' : 
+                             o.status === 'Diproses' ? 'bg-primary' : 
+                             o.status === 'Selesai' ? 'bg-success' : 'bg-danger';
+
+            if (o.status !== 'Dibatalkan') total += o.total_price;
+            if (currentTab === 'pesanan' && (o.status === 'pending' || o.status === 'Pesanan Masuk')) count++;
+            if (currentTab === 'history' && o.status === 'Selesai') count++;
+
+            // Parsing item JSON untuk menampilkan ringkasan
+            let items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+            let summary = items.map(i => `${i.qty}x ${i.name}`).join(', ');
+            if (summary.length > 50) summary = summary.substring(0, 50) + '...';
+
+            html += `
+            <div class="card border-0 shadow-sm mb-2" style="border-radius:15px; cursor:pointer;" onclick="PesananPage.openDetail('${o.id}')">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <span class="badge ${badgeColor} mb-1">${o.status}</span>
+                            <h6 class="fw-bold mb-0">${o.customer_name}</h6>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted" style="font-size: 0.7rem;">ID: ${o.id}</small><br>
+                            <span class="fw-800 text-success" style="font-size: 0.9rem;">Rp ${o.total_price.toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <p class="mb-0 text-muted small"><i class="bi bi-box"></i> ${summary}</p>
+                    <small class="text-muted" style="font-size: 0.7rem;">
+                        <i class="bi bi-geo-alt"></i> ${o.coords === 'Ambil Sendiri' ? 'Diambil sendiri' : 'Minta Diantar'}
+                    </small>
+                </div>
+            </div>`;
+        });
+
+        $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Belum ada pesanan masuk</p>');
+        $('#stat-new').text(count);
+        $('#stat-omzet').text('Rp ' + (total/1000).toFixed(0) + 'K');
+    },
+
+    openDetail: async function(orderId) {
+        Swal.showLoading();
+        
+        // 1. Ambil Data Pesanan
+        const { data: order } = await sb.from('orders').select('*').eq('id', orderId).single();
+        if(!order) return Swal.fire('Error', 'Pesanan tidak ditemukan', 'error');
+        currentOrderData = order;
+
+        let items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+        
+        // 2. Kumpulkan semua variant_id dari pesanan ini
+        let variantIds = items.map(i => i.variant_id);
+
+        // 3. Cek Stok di Inventory Desa ini
+        const { data: inventory } = await sb.from('inventory')
+            .select('variant_id, stok_sekarang')
+            .eq('desa_id', userDesaId)
+            .in('variant_id', variantIds);
+
+        // Buat map stok untuk pencarian cepat
+        let stockMap = {};
+        (inventory || []).forEach(inv => stockMap[inv.variant_id] = inv.stok_sekarang);
+
+        // 4. Render UI Modal
+        $('#det-id').text(order.id);
+        $('#det-nama').text(order.customer_name);
+        $('#det-wa').attr('href', `https://wa.me/62${order.whatsapp.replace(/^0+/, '')}`);
+        $('#det-metode').html(order.coords === 'Ambil Sendiri' ? '<span class="badge bg-info text-dark">Ambil Sendiri</span>' : '<span class="badge bg-primary">Diantar Kurir</span>');
+        $('#det-alamat').text(order.address || '-');
+        $('#det-total').text(`Rp ${order.total_price.toLocaleString()}`);
+
+        let itemsHtml = '';
+        let isStokAman = true;
+
+        items.forEach(item => {
+            let currentStock = stockMap[item.variant_id] || 0; // Jika tidak ada di inventory, stok = 0
+            let kekurangan = currentStock - item.qty;
+            
+            let statusStok = '';
+            if (kekurangan >= 0) {
+                statusStok = `<span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle"></i> Aman</span>`;
+            } else {
+                statusStok = `<span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-triangle"></i> Kurang ${Math.abs(kekurangan)}</span>`;
+                isStokAman = false; // Ada minimal 1 barang yang stoknya kurang
+            }
+
+            itemsHtml += `
+                <tr>
+                    <td class="fw-bold" style="font-size:0.85rem;">${item.name}</td>
+                    <td class="text-center">${item.qty}</td>
+                    <td class="text-center">${currentStock}</td>
+                    <td class="text-center">${statusStok}</td>
+                </tr>
+            `;
+        });
+        $('#det-items').html(itemsHtml);
+
+        // 5. Atur Tombol Aksi Berdasarkan Status
+        let actionHtml = '';
+        if (order.status === 'Pesanan Masuk') {
+            if (isStokAman) {
+                actionHtml = `<button class="btn btn-success fw-bold px-4" style="border-radius:12px;" onclick="PesananPage.prosesPesanan()"><i class="bi bi-check2-circle"></i> Konfirmasi & Potong Stok</button>`;
+            } else {
+                actionHtml = `
+                    <small class="text-danger d-block mb-1 fw-bold" style="font-size:0.7rem;">Stok tidak mencukupi!</small>
+                    <button class="btn btn-outline-danger fw-bold" style="border-radius:12px;" onclick="PesananPage.tolakPesanan()"><i class="bi bi-x-circle"></i> Tolak Pesanan</button>
+                    <button class="btn btn-warning fw-bold px-3 ms-1" style="border-radius:12px;" onclick="PesananPage.prosesPesanan(true)"><i class="bi bi-exclamation-circle"></i> Paksa Proses</button>
+                `;
+            }
+        } else if (order.status === 'Diproses') {
+            actionHtml = `<button class="btn btn-primary fw-bold px-4" style="border-radius:12px;" onclick="PesananPage.selesaikanPesanan()"><i class="bi bi-flag"></i> Tandai Selesai</button>`;
+        }
+        
+        $('#action-buttons').html(actionHtml);
+
+        Swal.close();
+        $('#modalDetailPesanan').modal('show');
+    },
+
+    // --- FUNGSI AKSI PESANAN ---
+
+    prosesPesanan: async function(isForce = false) {
+        const textConfirm = isForce ? "Memaksa proses akan membuat stok gudang menjadi minus. Lanjutkan?" : "Pesanan akan diproses dan stok akan otomatis dipotong.";
+        
+        const { isConfirmed } = await Swal.fire({
+            title: 'Proses Pesanan?', text: textConfirm, icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Proses'
+        });
+
+        if (!isConfirmed) return;
+        
+        Swal.showLoading();
+        let items = typeof currentOrderData.items === 'string' ? JSON.parse(currentOrderData.items) : currentOrderData.items;
+
+        try {
+            // 1. Potong Stok per item di tabel inventory
+            for (let item of items) {
+                // Ambil stok saat ini
+                const { data: invData } = await sb.from('inventory')
+                    .select('stok_sekarang')
+                    .match({ desa_id: userDesaId, variant_id: item.variant_id })
+                    .single();
+                
+                let sisaStok = (invData ? invData.stok_sekarang : 0) - item.qty;
+
+                // Update stok (atau Insert jika sebelumnya barang belum ada di inventory sama sekali)
+                if (invData) {
+                    await sb.from('inventory').update({ stok_sekarang: sisaStok }).match({ desa_id: userDesaId, variant_id: item.variant_id });
+                } else {
+                    await sb.from('inventory').insert([{ desa_id: userDesaId, variant_id: item.variant_id, stok_sekarang: sisaStok }]);
+                }
+            }
+
+            // 2. Update Status Pesanan
+            const { error: errOrder } = await sb.from('orders').update({ status: 'Diproses' }).eq('id', currentOrderData.id);
+            if(errOrder) throw errOrder;
+
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Pesanan diproses & stok dipotong.', timer: 1500, showConfirmButton: false });
+            $('#modalDetailPesanan').modal('hide');
+            this.fetchPesanan();
+        } catch (error) {
+            Swal.fire('Gagal', error.message, 'error');
+        }
+    },
+
+    selesaikanPesanan: async function() {
+        Swal.showLoading();
+        await sb.from('orders').update({ status: 'Selesai' }).eq('id', currentOrderData.id);
+        Swal.fire({ icon: 'success', title: 'Pesanan Selesai', timer: 1000, showConfirmButton: false });
+        $('#modalDetailPesanan').modal('hide');
+        this.fetchPesanan();
+    },
+
+    tolakPesanan: async function() {
+        const { value: alasan } = await Swal.fire({
+            title: 'Tolak Pesanan', input: 'text', inputLabel: 'Alasan penolakan', showCancelButton: true
+        });
+        
+        if (alasan) {
+            Swal.showLoading();
+            await sb.from('orders').update({ status: 'Ditolak', alasan_batal: alasan }).eq('id', currentOrderData.id);
+            Swal.fire('Ditolak', 'Pesanan telah dibatalkan', 'success');
+            $('#modalDetailPesanan').modal('hide');
+            this.fetchPesanan();
         }
     }
 
