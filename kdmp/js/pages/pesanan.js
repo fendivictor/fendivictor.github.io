@@ -81,9 +81,25 @@ const PesananPage = {
             </div>`;
         });
 
+        let omzet = 'Rp ' + (total/1000).toFixed(0) + 'K';
+        $("#stat-area").html(`<div id="stat-area" class="card stat-card mb-4 mt-5">
+            <div class="card-body py-4 text-center">
+                <div class="row">
+                    <div class="col-6 border-end">
+                        <small class="text-muted d-block fw-600" id="stat-label">Pesanan Baru</small>
+                        <span id="stat-new" class="fw-800 fs-3 text-warning">${count}</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block fw-600">Omzet Total</small>
+                        <span id="stat-omzet" class="fw-800 fs-3 text-success">${omzet}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`);
+
         $('#main-content').html(html || '<p class="text-center py-5 opacity-50">Tidak ada pesanan</p>');
-        $('#stat-new').text(count);
-        $('#stat-omzet').text('Rp ' + (total/1000).toFixed(0) + 'K');
+        //$('#stat-new').text(count);
+        //$('#stat-omzet').text('Rp ' + (total/1000).toFixed(0) + 'K');
     },
 
     getStatusClass: function(status) {
