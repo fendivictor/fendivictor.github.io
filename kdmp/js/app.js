@@ -78,6 +78,7 @@ function switchTab(tab, el) {
         case 'master_satuan':   MasterPage.init('units'); break;
         case 'desa':           MasterPage.initDesa(); break;
         case 'anggota': AnggotaPage.init(); break;
+        case 'stok': StokPage.init(); break;
     }
 }
 
