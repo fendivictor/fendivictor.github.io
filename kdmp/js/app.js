@@ -89,7 +89,7 @@ function subscribeOrders() {
             if (payload.eventType === 'INSERT' && userRole === 'admin_desa' && payload.new.desa_id === userDesaId) {
                 Swal.fire('Pesanan Baru!', `Dari ${payload.new.customer_name}`, 'info');
             }
-            if (currentTab === 'pesanan' || currentTab === 'history') PesananPage.fetchOrders(currentTab === 'history' ? 'history' : 'active');
+            if (currentTab === 'pesanan' || currentTab === 'history') PesananPage.fetchPesanan(currentTab === 'history' ? 'history' : 'active');
         }
     ).subscribe();
 }
