@@ -107,9 +107,6 @@ const MasterPage = {
             html += `
             <div class="card desa-card border-0 shadow-sm mb-2">
                 <div class="card-body p-3 d-flex align-items-center">
-                    <div class="bg-success-subtle rounded-circle p-3 me-3 text-success">
-                        <i class="bi bi-houses fs-5"></i>
-                    </div>
                     <div class="flex-grow-1">
                         <h6 class="fw-bold mb-0">${d.nama_desa}</h6>
                         <small class="text-muted" style="font-size: 0.75rem;">ID: ${shortId} | ${d.admin_email}</small>
