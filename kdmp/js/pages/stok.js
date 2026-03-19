@@ -194,7 +194,6 @@ const StokPage = {
     },
 
     updateStok: async function(variantId, itemName) {
-        // Proteksi ganda: Jangan sampai fungsi ini dipanggil lewat console oleh Super Admin
         if (userRole === 'super_admin') return Swal.fire('Ditolak', 'Super Admin hanya dapat melihat stok.', 'error');
 
         const inputEl = $(`#input-stok-${variantId}`);
@@ -208,7 +207,16 @@ const StokPage = {
 
         try {
             const hasInventory = this.inventoryMap[variantId] !== undefined;
+            const oldStock = hasInventory ? this.inventoryMap[variantId] : 0;
+            const selisih = newStock - oldStock;
 
+            // Jika tidak ada perubahan angka, batalkan proses (hemat kuota database)
+            if (selisih === 0) {
+                btn.html(originalHtml).prop('disabled', false);
+                return;
+            }
+
+            // 1. Update/Insert ke tabel inventory utama
             if (hasInventory) {
                 const { error } = await sb.from('inventory').update({ stok_sekarang: newStock }).match({ desa_id: this.selectedDesaId, variant_id: variantId });
                 if (error) throw error;
@@ -216,6 +224,16 @@ const StokPage = {
                 const { error } = await sb.from('inventory').insert([{ desa_id: this.selectedDesaId, variant_id: variantId, stok_sekarang: newStock }]);
                 if (error) throw error;
             }
+
+            // 2. CATAT LOG KE RIWAYAT STOK
+            await sb.from('riwayat_stok').insert([{
+                desa_id: this.selectedDesaId,
+                variant_id: variantId,
+                jenis: 'Penyesuaian Manual',
+                jumlah_perubahan: selisih,
+                stok_akhir: newStock,
+                keterangan: `Diubah oleh Admin Desa`
+            }]);
 
             this.inventoryMap[variantId] = newStock;
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `${itemName} diupdate`, showConfirmButton: false, timer: 1500 });
@@ -225,5 +243,56 @@ const StokPage = {
         } finally {
             btn.html(originalHtml).prop('disabled', false);
         }
+    },
+
+    lihatRiwayat: async function(variantId, itemName) {
+        if (!this.selectedDesaId) return Swal.fire('Oops', 'Pilih desa terlebih dahulu', 'warning');
+        
+        Swal.showLoading();
+        
+        $('#rs-nama-barang').text(itemName);
+        $('#rs-tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div> Memuat...</td></tr>');
+        $('#modalRiwayatStok').modal('show');
+
+        // Tarik 50 histori terakhir untuk barang ini di desa ini
+        const { data, error } = await sb.from('riwayat_stok')
+            .select('*')
+            .eq('desa_id', this.selectedDesaId)
+            .eq('variant_id', variantId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        Swal.close();
+
+        if (error) {
+            $('#rs-tbody').html(`<tr><td colspan="5" class="text-center text-danger">${error.message}</td></tr>`);
+            return;
+        }
+
+        let html = '';
+        if (!data || data.length === 0) {
+            html = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada riwayat pergerakan stok.</td></tr>';
+        } else {
+            data.forEach(log => {
+                const tgl = new Date(log.created_at).toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+                
+                // Format Warna Angka: Plus (Hijau), Minus (Merah)
+                let badgeGerak = '';
+                if (log.jumlah_perubahan > 0) badgeGerak = `<span class="badge bg-success-subtle text-success">+${log.jumlah_perubahan}</span>`;
+                else if (log.jumlah_perubahan < 0) badgeGerak = `<span class="badge bg-danger-subtle text-danger">${log.jumlah_perubahan}</span>`;
+                else badgeGerak = `<span class="badge bg-light text-dark">0</span>`;
+
+                html += `
+                    <tr>
+                        <td class="text-muted" style="font-size: 0.75rem;">${tgl}</td>
+                        <td class="fw-bold">${log.jenis}</td>
+                        <td class="text-muted">${log.keterangan || '-'}</td>
+                        <td class="text-center fs-6">${badgeGerak}</td>
+                        <td class="text-center fw-bold fs-6">${log.stok_akhir}</td>
+                    </tr>
+                `;
+            });
+        }
+        $('#rs-tbody').html(html);
     }
 };
