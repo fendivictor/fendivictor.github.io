@@ -285,6 +285,37 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalRiwayatStok" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                <div class="modal-header border-0 px-4 pt-4">
+                    <div>
+                        <h5 class="modal-title fw-800 mb-0">Kartu Stok</h5>
+                        <small class="text-success fw-bold" id="rs-nama-barang"></small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" style="font-size: 0.85rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-muted">Waktu</th>
+                                    <th class="text-muted">Jenis Transaksi</th>
+                                    <th class="text-muted">Keterangan</th>
+                                    <th class="text-muted text-center">Pergerakan</th>
+                                    <th class="text-muted text-center">Sisa Stok</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rs-tbody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="modalDetailPesanan" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content" style="border-radius: 20px; border: none;">
