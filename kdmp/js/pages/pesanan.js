@@ -362,7 +362,7 @@ const PesananPage = {
 
         try {
             // Potongan ID pesanan untuk keterangan di log
-            const shortOrderId = currentOrderData.id.split('-')[0].toUpperCase();
+            const shortOrderId = currentOrderData.id;
 
             // 1. Potong Stok per item di tabel inventory
             for (let item of items) {
