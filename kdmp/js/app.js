@@ -72,7 +72,7 @@ function switchTab(tab, el) {
 
     switch(tab) {
         case 'pesanan':        PesananPage.init('active'); break;
-        case 'history':        PesananPage.init('history'); break;
+        case 'history':        HistoryPage.init(); break;
         case 'produk':         ProdukPage.init(); break;
         case 'master_kategori': MasterPage.init('categories'); break;
         case 'master_satuan':   MasterPage.init('units'); break;
