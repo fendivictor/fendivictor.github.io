@@ -142,14 +142,12 @@ const StokPage = {
                 // LOGIKA ROLE: UI Input untuk Admin Desa, UI Label statis untuk Super Admin
                 let inputArea = '';
                 if (userRole === 'super_admin') {
-                    // Badge statis jika Super Admin
                     const stockClass = v.stock > 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger';
                     inputArea = `<span class="badge ${stockClass} px-3 py-2" style="font-size: 0.85rem;">Stok: ${v.stock}</span>`;
                 } else {
-                    // Input dinamis jika Admin Desa
                     inputArea = `
                         <input type="number" id="input-stok-${v.variant_id}" class="form-control form-control-sm text-center fw-bold" style="width: 70px;" value="${v.stock}">
-                        <button class="btn btn-sm btn-success" onclick="StokPage.updateStok('${v.variant_id}', '${p.name} - ${v.unit_name}')">
+                        <button class="btn btn-sm btn-success" onclick="StokPage.updateStok('${v.variant_id}', '${p.name} - ${v.unit_name}')" title="Simpan Stok">
                             <i class="bi bi-check-lg"></i>
                         </button>
                     `;
@@ -163,6 +161,9 @@ const StokPage = {
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             ${inputArea}
+                            <button class="btn btn-sm btn-light border text-secondary" onclick="StokPage.lihatRiwayat('${v.variant_id}', '${p.name} - ${v.unit_name}')" title="Kartu Stok">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
                         </div>
                     </div>
                 `;
