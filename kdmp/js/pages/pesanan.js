@@ -361,6 +361,9 @@ const PesananPage = {
         let items = typeof currentOrderData.items === 'string' ? JSON.parse(currentOrderData.items) : currentOrderData.items;
 
         try {
+            // Potongan ID pesanan untuk keterangan di log
+            const shortOrderId = currentOrderData.id.split('-')[0].toUpperCase();
+
             // 1. Potong Stok per item di tabel inventory
             for (let item of items) {
                 // Ambil stok saat ini
@@ -377,6 +380,19 @@ const PesananPage = {
                 } else {
                     await sb.from('inventory').insert([{ desa_id: userDesaId, variant_id: item.variant_id, stok_sekarang: sisaStok }]);
                 }
+
+                // ====================================================================
+                // TAMBAHAN: CATAT LOG KE RIWAYAT STOK
+                // ====================================================================
+                await sb.from('riwayat_stok').insert([{
+                    desa_id: userDesaId,
+                    variant_id: item.variant_id,
+                    jenis: 'Pesanan Masuk',
+                    jumlah_perubahan: -item.qty, // Angka minus karena stok keluar
+                    stok_akhir: sisaStok,
+                    keterangan: `Pesanan #${shortOrderId} - ${currentOrderData.customer_name}`
+                }]);
+                // ====================================================================
             }
 
             // 2. Update Status Pesanan
