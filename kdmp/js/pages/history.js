@@ -178,7 +178,7 @@ const HistoryPage = {
                             <small class="text-muted" style="font-size: 0.7rem;">${tgl}</small>
                         </div>
                         <div class="text-end">
-                            <small class="text-muted" style="font-size: 0.7rem;">ID: ${o.id.split('-')[0]}</small><br>
+                            <small class="text-muted" style="font-size: 0.7rem;">ID: ${o.id}</small><br>
                             <span class="fw-800 text-dark" style="font-size: 0.9rem;">Rp ${o.total_price.toLocaleString()}</span>
                         </div>
                     </div>
