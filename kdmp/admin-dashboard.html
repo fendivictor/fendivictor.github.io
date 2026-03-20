@@ -288,12 +288,16 @@
     <div class="modal fade" id="modalRiwayatStok" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow" style="border-radius: 20px;">
-                <div class="modal-header border-0 px-4 pt-4">
+                <div class="modal-header border-0 px-4 pt-4 d-flex justify-content-between align-items-start">
                     <div>
                         <h5 class="modal-title fw-800 mb-0">Kartu Stok</h5>
                         <small class="text-success fw-bold" id="rs-nama-barang"></small>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-sm btn-outline-success d-none" id="btn-export-rs-excel" title="Export Excel"><i class="bi bi-file-earmark-excel"></i></button>
+                        <button class="btn btn-sm btn-outline-danger d-none" id="btn-export-rs-pdf" title="Export PDF"><i class="bi bi-file-earmark-pdf"></i></button>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
                 <div class="modal-body px-4 pb-4">
                     <div class="table-responsive">
@@ -370,6 +374,9 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <script src="js/pages/pesanan.js"></script>
     <script src="js/pages/produk.js"></script>

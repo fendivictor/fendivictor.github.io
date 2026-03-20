@@ -21,38 +21,33 @@ const HistoryPage = {
 
     // 1. RENDER TABS & SEARCH BAR
     renderHeaderUI: function() {
-        // Area Statistik (di-render kosong dulu, diisi oleh fetchStats)
         $('#stat-area').html('<div id="history-stats" class="row g-2 mb-3"></div>').show();
 
-        // Area Filter (Tabs & Search)
         const htmlFilter = `
             <div class="card border-0 shadow-sm mb-3" style="border-radius: 15px;">
                 <div class="card-body p-2">
                     <ul class="nav nav-pills nav-justified mb-2" id="history-tabs">
-                        <li class="nav-item">
-                            <button class="nav-link active fw-bold" style="border-radius: 10px;" onclick="HistoryPage.switchTab('Selesai', this)">✅ Selesai</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link fw-bold text-danger" style="border-radius: 10px;" onclick="HistoryPage.switchTab('Ditolak', this)">❌ Dibatalkan</button>
-                        </li>
+                        <li class="nav-item"><button class="nav-link active fw-bold" style="border-radius: 10px;" onclick="HistoryPage.switchTab('Selesai', this)">✅ Selesai</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold text-danger" style="border-radius: 10px;" onclick="HistoryPage.switchTab('Ditolak', this)">❌ Dibatalkan</button></li>
                     </ul>
-                    <div class="input-group mt-2 px-1 pb-1">
-                        <span class="input-group-text bg-light border-0" style="border-radius: 10px 0 0 10px;"><i class="bi bi-search"></i></span>
-                        <input type="text" id="history-search" class="form-control bg-light border-0" style="border-radius: 0 10px 10px 0;" placeholder="Cari nama pemesan atau ID..." value="${this.searchKeyword}">
+                    <div class="d-flex gap-2 mt-2 px-1 pb-1">
+                        <div class="input-group flex-grow-1">
+                            <span class="input-group-text bg-light border-0" style="border-radius: 10px 0 0 10px;"><i class="bi bi-search"></i></span>
+                            <input type="text" id="history-search" class="form-control bg-light border-0" style="border-radius: 0 10px 10px 0;" placeholder="Cari nama pemesan atau ID..." value="${this.searchKeyword}">
+                        </div>
+                        <button class="btn btn-success" style="border-radius: 10px;" onclick="HistoryPage.exportData('excel')" title="Export Excel"><i class="bi bi-file-earmark-excel"></i></button>
+                        <button class="btn btn-danger" style="border-radius: 10px;" onclick="HistoryPage.exportData('pdf')" title="Export PDF"><i class="bi bi-file-earmark-pdf"></i></button>
                     </div>
                 </div>
             </div>
         `;
         $('#filter-area').html(htmlFilter).show();
 
-        // Listener Pencarian dengan Debounce
         $('#history-search').on('input', (e) => {
             this.searchKeyword = e.target.value;
             this.currentPage = 0; 
             clearTimeout(this.searchTimer);
-            this.searchTimer = setTimeout(() => {
-                this.fetchData();
-            }, 500);
+            this.searchTimer = setTimeout(() => this.fetchData(), 500);
         });
     },
 
@@ -71,15 +66,15 @@ const HistoryPage = {
         this.fetchData();
     },
 
-    // 2. FETCH STATISTIK RINGKASAN
+    // 2. FETCH STATISTIK RINGKASAN & LABA RUGI (VERSI SNAPSHOT JSON)
     fetchStats: async function() {
-        $('#history-stats').html('<div class="col-12 text-center small text-muted">Memuat statistik...</div>');
+        $('#history-stats').html('<div class="col-12 text-center small text-muted"><div class="spinner-border spinner-border-sm text-success"></div> Menghitung Laporan Keuangan...</div>');
 
-        // Query dasar
-        let querySelesai = sb.from('orders').select('total_price', { count: 'exact' }).eq('status', 'Selesai');
+        // 1. Ambil data Pesanan (Selesai dan Batal) - Tidak perlu lagi narik data Varian Pusat
+        let querySelesai = sb.from('orders').select('total_price, items', { count: 'exact' }).eq('status', 'Selesai');
         let queryBatal = sb.from('orders').select('id', { count: 'exact' }).eq('status', 'Ditolak');
 
-        // Logika Role: Jika bukan super_admin, filter berdasarkan desa_id
+        // Filter Role 
         if (userRole !== 'super_admin') {
             querySelesai = querySelesai.eq('desa_id', userDesaId);
             queryBatal = queryBatal.eq('desa_id', userDesaId);
@@ -87,31 +82,59 @@ const HistoryPage = {
 
         const [resSelesai, resBatal] = await Promise.all([querySelesai, queryBatal]);
 
-        // Hitung total pendapatan dari data Selesai
-        let totalPendapatan = 0;
+        // 2. Kalkulasi Omset, Modal, dan Laba langsung dari JSON
+        let totalOmset = 0;
+        let totalModal = 0;
+
         if (resSelesai.data) {
-            totalPendapatan = resSelesai.data.reduce((sum, order) => sum + (order.total_price || 0), 0);
+            resSelesai.data.forEach(order => {
+                totalOmset += (order.total_price || 0);
+
+                let items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+                items.forEach(item => {
+                    // Ambil harga_beli langsung dari snapshot JSON (Default 0 jika pesanan lama belum punya field ini)
+                    let modalPerItem = (item.harga_beli || 0) * item.qty;
+                    totalModal += modalPerItem;
+                });
+            });
         }
 
+        const labaBersih = totalOmset - totalModal;
         const countSelesai = resSelesai.count || 0;
         const countBatal = resBatal.count || 0;
 
+        // 3. Render UI
         const statHtml = `
-            <div class="col-6">
-                <div class="card border-0 bg-success text-white shadow-sm h-100" style="border-radius: 15px;">
+            <div class="col-md-4 col-6 mb-2">
+                <div class="card border-0 bg-white shadow-sm h-100" style="border-radius: 15px; border-left: 5px solid #0dcaf0 !important;">
                     <div class="card-body p-3">
-                        <small class="d-block opacity-75 fw-bold" style="font-size:0.7rem;">OMSET BERSIH</small>
-                        <h5 class="fw-800 mb-0 mt-1">Rp ${totalPendapatan.toLocaleString()}</h5>
-                        <small class="opacity-75" style="font-size:0.7rem;">Dari ${countSelesai} pesanan</small>
+                        <small class="d-block text-muted fw-bold" style="font-size:0.7rem;">OMSET KOTOR</small>
+                        <h5 class="fw-800 text-dark mb-0 mt-1">Rp ${totalOmset.toLocaleString()}</h5>
+                        <small class="text-muted" style="font-size:0.7rem;">Dari ${countSelesai} pesanan</small>
                     </div>
                 </div>
             </div>
-            <div class="col-6">
-                <div class="card border-0 bg-danger-subtle text-danger shadow-sm h-100" style="border-radius: 15px;">
+            <div class="col-md-4 col-6 mb-2">
+                <div class="card border-0 bg-white shadow-sm h-100" style="border-radius: 15px; border-left: 5px solid #ffc107 !important;">
                     <div class="card-body p-3">
-                        <small class="d-block opacity-75 fw-bold" style="font-size:0.7rem;">PESANAN BATAL</small>
-                        <h3 class="fw-800 mb-0 mt-1">${countBatal}</h3>
-                        <small class="opacity-75" style="font-size:0.7rem;">Transaksi gagal/ditolak</small>
+                        <small class="d-block text-muted fw-bold" style="font-size:0.7rem;">TOTAL MODAL</small>
+                        <h5 class="fw-800 text-dark mb-0 mt-1">Rp ${totalModal.toLocaleString()}</h5>
+                        <small class="text-muted" style="font-size:0.7rem;">Harga Beli (HPP)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-12 mb-2">
+                <div class="card border-0 bg-success text-white shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="d-block opacity-75 fw-bold" style="font-size:0.7rem;">LABA BERSIH</small>
+                                <h4 class="fw-800 mb-0 mt-1">Rp ${labaBersih.toLocaleString()}</h4>
+                            </div>
+                            <div class="bg-white text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="bi bi-graph-up-arrow fs-5"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -223,5 +246,68 @@ const HistoryPage = {
         this.currentPage = newPage;
         this.fetchData();
         window.scrollTo(0, 0);
+    },
+
+    exportData: async function(format) {
+        Swal.showLoading();
+
+        // 1. Tarik SEMUA data (tanpa limit/range) sesuai tab aktif & role
+        let query = sb.from('orders').select('*, desas(nama_desa)').eq('status', this.currentTab).order('created_at', { ascending: false });
+        if (userRole !== 'super_admin') query = query.eq('desa_id', userDesaId);
+        if (this.searchKeyword) query = query.or(`customer_name.ilike.%${this.searchKeyword}%,id.ilike.%${this.searchKeyword}%`);
+
+        const { data, error } = await query;
+        if (error || !data || data.length === 0) return Swal.fire('Gagal', 'Tidak ada data untuk diekspor', 'error');
+
+        // 2. Siapkan array data mentah untuk tabel
+        const tableData = data.map((o, index) => {
+            const tgl = new Date(o.created_at).toLocaleString('id-ID');
+            const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+            const detailBarang = items.map(i => `${i.qty}x ${i.name}`).join(', ');
+            const namaDesa = o.desas?.nama_desa || 'Unknown';
+
+            return [
+                index + 1,
+                tgl,
+                o.id,
+                namaDesa,
+                o.customer_name,
+                detailBarang,
+                o.total_price,
+                o.status
+            ];
+        });
+
+        const headers = [['No', 'Tanggal', 'ID Pesanan', 'Desa', 'Pelanggan', 'Detail Barang', 'Total (Rp)', 'Status']];
+        const fileName = `Laporan_Pesanan_${this.currentTab}_${new Date().getTime()}`;
+
+        if (format === 'excel') {
+            // EXPORT EXCEL
+            const ws = XLSX.utils.aoa_to_sheet([...headers, ...tableData]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+            XLSX.writeFile(wb, `${fileName}.xlsx`);
+            Swal.close();
+        } else if (format === 'pdf') {
+            // EXPORT PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape'); // Kertas landscape agar muat banyak kolom
+            
+            doc.text(`Laporan Pesanan - ${this.currentTab}`, 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 22);
+
+            doc.autoTable({
+                startY: 25,
+                head: headers,
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [25, 135, 84] }, // Warna Hijau Success
+                styles: { fontSize: 8 }
+            });
+
+            doc.save(`${fileName}.pdf`);
+            Swal.close();
+        }
     }
 };

@@ -249,18 +249,20 @@ const StokPage = {
         if (!this.selectedDesaId) return Swal.fire('Oops', 'Pilih desa terlebih dahulu', 'warning');
         
         Swal.showLoading();
-        
         $('#rs-nama-barang').text(itemName);
         $('#rs-tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div> Memuat...</td></tr>');
+        
+        // Sembunyikan tombol export saat loading
+        $('#btn-export-rs-excel, #btn-export-rs-pdf').addClass('d-none');
+        
         $('#modalRiwayatStok').modal('show');
 
-        // Tarik 50 histori terakhir untuk barang ini di desa ini
+        // Tarik semua histori (Hapus .limit(50) agar data export lengkap)
         const { data, error } = await sb.from('riwayat_stok')
             .select('*')
             .eq('desa_id', this.selectedDesaId)
             .eq('variant_id', variantId)
-            .order('created_at', { ascending: false })
-            .limit(50);
+            .order('created_at', { ascending: true });
 
         Swal.close();
 
@@ -273,14 +275,15 @@ const StokPage = {
         if (!data || data.length === 0) {
             html = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada riwayat pergerakan stok.</td></tr>';
         } else {
+            // Tampilkan tombol export dan pasang event listener baru
+            $('#btn-export-rs-excel').removeClass('d-none').off('click').on('click', () => StokPage.exportRiwayat('excel', data, itemName));
+            $('#btn-export-rs-pdf').removeClass('d-none').off('click').on('click', () => StokPage.exportRiwayat('pdf', data, itemName));
+
             data.forEach(log => {
                 const tgl = new Date(log.created_at).toLocaleString('id-ID', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-                
-                // Format Warna Angka: Plus (Hijau), Minus (Merah)
-                let badgeGerak = '';
-                if (log.jumlah_perubahan > 0) badgeGerak = `<span class="badge bg-success-subtle text-success">+${log.jumlah_perubahan}</span>`;
-                else if (log.jumlah_perubahan < 0) badgeGerak = `<span class="badge bg-danger-subtle text-danger">${log.jumlah_perubahan}</span>`;
-                else badgeGerak = `<span class="badge bg-light text-dark">0</span>`;
+                let badgeGerak = log.jumlah_perubahan > 0 ? `<span class="badge bg-success-subtle text-success">+${log.jumlah_perubahan}</span>` : 
+                                 log.jumlah_perubahan < 0 ? `<span class="badge bg-danger-subtle text-danger">${log.jumlah_perubahan}</span>` : 
+                                 `<span class="badge bg-light text-dark">0</span>`;
 
                 html += `
                     <tr>
@@ -294,5 +297,48 @@ const StokPage = {
             });
         }
         $('#rs-tbody').html(html);
+    },
+
+    exportRiwayat: function(format, data, itemName) {
+        const tableData = data.map((log, index) => [
+            index + 1,
+            new Date(log.created_at).toLocaleString('id-ID'),
+            log.jenis,
+            log.keterangan || '-',
+            log.jumlah_perubahan > 0 ? `+${log.jumlah_perubahan}` : log.jumlah_perubahan,
+            log.stok_akhir
+        ]);
+
+        const headers = [['No', 'Waktu', 'Jenis Transaksi', 'Keterangan', 'Pergerakan', 'Sisa Stok']];
+        const safeItemName = itemName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const fileName = `Kartu_Stok_${safeItemName}_${new Date().getTime()}`;
+
+        if (format === 'excel') {
+            const ws = XLSX.utils.aoa_to_sheet([...headers, ...tableData]);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Kartu Stok");
+            XLSX.writeFile(wb, `${fileName}.xlsx`);
+        } else if (format === 'pdf') {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('portrait');
+            
+            doc.setFontSize(14);
+            doc.text(`Buku Besar / Kartu Stok`, 14, 15);
+            doc.setFontSize(11);
+            doc.text(`Barang: ${itemName}`, 14, 22);
+            doc.setFontSize(9);
+            doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 14, 28);
+
+            doc.autoTable({
+                startY: 32,
+                head: headers,
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [25, 135, 84] },
+                styles: { fontSize: 9 }
+            });
+
+            doc.save(`${fileName}.pdf`);
+        }
     }
 };
