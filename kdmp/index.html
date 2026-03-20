@@ -206,7 +206,7 @@
             const { data, error } = await sb.from('product_variants')
                 .select(`
                     id, 
-                    harga_jual, 
+                    harga_jual, harga_beli,
                     units (name), 
                     products (id, name, categories(name), image_url)
                 `);
@@ -242,7 +242,7 @@
                 tempGroup[pId].variants.push({
                     variant_id: pv.id, // Ini ID varian untuk masuk ke keranjang
                     unit_name: pv.units.name,
-                    price: pv.harga_jual
+                    price: pv.harga_jual, harga_beli: pv.harga_beli || 0
                     // Parameter stok dihapus karena ini katalog global
                 });
             });
@@ -350,18 +350,18 @@
                     const itemName = `${p.name} - ${v.unit_name}`;
                     
                     variantHtml += `
-                        <div class="variant-row d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-bold text-dark" style="font-size: 0.85rem;">${v.unit_name}</div>
-                                <div class="text-success fw-800" style="font-size: 0.95rem;">Rp ${v.price.toLocaleString()}</div>
-                            </div>
-                            <div class="qty-wrapper">
-                                <button class="btn-qty" onclick="updateQty('${v.variant_id}', -1, ${v.price}, '${itemName}', ${v.stock})"><i class="bi bi-dash"></i></button>
-                                <input type="text" readonly class="text-center border-0 fw-bold px-1" style="width:30px; background:transparent" value="${qty}" id="q-${v.variant_id}">
-                                <button class="btn-qty" onclick="updateQty('${v.variant_id}', 1, ${v.price}, '${itemName}', ${v.stock})"><i class="bi bi-plus"></i></button>
-                            </div>
-                        </div>
-                    `;
+            <div class="variant-row d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-bold text-dark" style="font-size: 0.85rem;">${v.unit_name}</div>
+                    <div class="text-success fw-800" style="font-size: 0.95rem;">Rp ${v.price.toLocaleString()}</div>
+                </div>
+                <div class="qty-wrapper">
+                    <button class="btn-qty" onclick="updateQty('${v.variant_id}', -1, ${v.price}, ${v.harga_beli}, '${itemName}')"><i class="bi bi-dash"></i></button>
+                    <input type="text" readonly class="text-center border-0 fw-bold px-1" style="width:30px; background:transparent" value="${qty}" id="q-${v.variant_id}">
+                    <button class="btn-qty" onclick="updateQty('${v.variant_id}', 1, ${v.price}, ${v.harga_beli}, '${itemName}')"><i class="bi bi-plus"></i></button>
+                </div>
+            </div>
+        `;
                 });
 
                 html += `
@@ -384,24 +384,19 @@
 
         // UPDATE CART LOGIC
         // maxStock parameter dihapus
-        window.updateQty = (variantId, delta, price, itemName) => {
+        window.updateQty = (variantId, delta, price, hargaBeli, itemName) => {
             if (!cart[variantId]) {
-                cart[variantId] = { qty: 0, price: price, name: itemName, id: variantId };
+                // Simpan harga_beli ke dalam object cart
+                cart[variantId] = { qty: 0, price: price, harga_beli: hargaBeli, name: itemName, id: variantId };
             }
             
             let newQty = cart[variantId].qty + delta;
-            
-            // Validasi: hanya tidak boleh minus
             if (newQty < 0) newQty = 0;
-
-            // Block alert limit stok dihapus
 
             cart[variantId].qty = newQty;
             $(`#q-${variantId}`).val(newQty);
 
-            // Jika Qty 0, hapus dari object cart
             if (newQty === 0) delete cart[variantId];
-
             calculateTotal();
         }
 
@@ -433,11 +428,12 @@
 
             // Mapping cart object ke array untuk database
             const itemsArray = Object.values(cart).map(item => ({ 
-                variant_id: item.id,
-                name: item.name, 
-                qty: item.qty, 
-                sub: item.price * item.qty 
-            }));
+            variant_id: item.id,
+            name: item.name, 
+            qty: item.qty, 
+            sub: item.price * item.qty,
+            harga_beli: item.harga_beli 
+        }));
             
             const total = itemsArray.reduce((sum, item) => sum + item.sub, 0);
 
