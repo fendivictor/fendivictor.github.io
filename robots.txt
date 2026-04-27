@@ -1,3 +1,13 @@
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt for Victor Fendi Portfolio
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap location
+Sitemap: https://fendivictor.github.io/sitemap.xml
+
+# Crawl-delay (optional, be nice to servers)
+Crawl-delay: 1
+
+# Disallow admin/private paths (if any in future)
+# Disallow: /admin/
+# Disallow: /private/
