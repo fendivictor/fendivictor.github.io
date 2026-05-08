@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mengapa MySQL tetap menjadi database pilihan utama di 2026 - perspektif dari software engineer yang handle production systems">
+    <meta name="author" content="Victor Fendi">
+    <title>Mengapa Saya Masih Memilih MySQL di 2026 | Victor Fendi</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/article.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">VF.</a>
+            <ul class="nav-links">
+                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#skills">Skills</a></li>
+                <li><a href="../index.html#projects">Projects</a></li>
+                <li><a href="../blog.html" class="active">Blog</a></li>
+                <li><a href="../index.html#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Article -->
+    <article class="article">
+        <header class="article-header">
+            <div class="container">
+                <div class="article-meta">
+                    <span class="article-date">May 8, 2026</span>
+                    <span class="article-category">Database / MySQL</span>
+                    <span class="article-read-time">6 min read</span>
+                </div>
+                <h1 class="article-title">Mengapa Saya Masih Memilih MySQL di 2026</h1>
+                <p class="article-subtitle">PostgreSQL semakin populer, MongoDB tetap punya tempat, tapi MySQL tetap menjadi RDBMS pilihan saya untuk kebanyakan project.</p>
+                <div class="article-tags">
+                    <span>MySQL</span>
+                    <span>Database</span>
+                    <span>Backend Development</span>
+                    <span>Opinion</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="article-content">
+            <div class="container">
+                <div class="content">
+                    <p class="lead">Setiap kali ada diskusi tentang database, selalu ada yang bilang: <em>"Coba PostgreSQL aja, lebih bagus."</em> Dan saya setuju — PostgreSQL memang powerful. Tapi di 2026 ini, MySQL tetap menjadi pilihan utama saya untuk sebagian besar production projects. Ini bukan fanboyism, ini berdasarkan pengalaman nyata.</p>
+
+                    <h2 id="1-bukan-soal-yang-paling-bagus">1. Bukan Soal "Yang Paling Bagus"</h2>
+                    <p>Kesalahan terbesar dalam memilih teknologi adalah mencari <strong>"yang terbaik"</strong>. Realitanya, "terbaik" itu tergantung konteks. MySQL punya kelebihan di area yang seringkali lebih penting daripada fitur-fitur advanced:</p>
+
+                    <ul>
+                        <li><strong>Speed untuk read-heavy workloads</strong> — MySQL masih salah satu yang tercepat untuk operasi SELECT sederhana</li>
+                        <li><strong>Memory efficiency</strong> — MySQL umumnya butuh RAM lebih sedikit dibanding PostgreSQL dengan beban yang sama</li>
+                        <li><strong>Replication yang matang</strong> — Master-slave replication udah stabil dan well-documented</li>
+                        <li><strong>Hosting support</strong> — Hampir semua shared hosting dan managed services support MySQL</li>
+                    </ul>
+
+                    <blockquote>
+                        <p>Pilih database berdasarkan masalah yang kamu selesaikan, bukan berdasarkan benchmark yang kamu baca di internet.</p>
+                    </blockquote>
+
+                    <h2 id="2-innodb-sudah-banyak-berubah">2. InnoDB Sudah Banyak Berubah</h2>
+                    <p>Orang-orang yang masih menganggap MySQL "lemah" biasanya pernah pakai <strong>MyISAM</strong> di masa lalu. Kenapa ini penting?</p>
+
+                    <p>MyISAM adalah storage engine lama yang <strong>tidak punya transaction support, tidak punya crash recovery, dan rawan corrupt</strong>. Kalau server mati mendadak, tabel MyISAM bisa rusak — dan saya bisa bicara banyak soal ini karena sempat menangani kasus 9 tabel corrupt di production akibat unclean shutdown setelah server jalan 573 hari tanpa restart.</p>
+
+                    <p>Tapi <strong>InnoDB</strong> (default storage engine sejak MySQL 5.5) sudah jauh berbeda:</p>
+
+                    <ul>
+                        <li><strong>ACID compliant</strong> — Transaction support yang proper</li>
+                        <li><strong>Crash recovery</strong> — Write-ahead log (WAL) memastikan data konsisten walau server mati mendadak</li>
+                        <li><strong>Foreign keys</strong> — Full referential integrity support</li>
+                        <li><strong>Row-level locking</strong> — Concurrency yang jauh lebih baik</li>
+                        <li><strong>Performance</strong> — InnoDB 8.0+ sangat cepat untuk mixed workloads</li>
+                    </ul>
+
+                    <p>Lesson learned dari kasus corrupt tadi: <strong>migrasi MyISAM ke InnoDB bukan opsional, ini wajib</strong> untuk production database.</p>
+
+                    <h2 id="3-mysql-8-0-adalah-game-changer">3. MySQL 8.0+ Adalah Game Changer</h2>
+                    <p>MySQL 8.0 membawa perubahan besar yang sering diabaikan:</p>
+
+                    <ul>
+                        <li><strong>Window Functions</strong> — Akhirnya! Analytical queries jadi mungkin tanpa subquery kompleks</li>
+                        <li><strong>Common Table Expressions (CTE)</strong> — Recursive queries, readable complex queries</li>
+                        <li><strong>JSON support yang lebih baik</strong> — Bukan untuk ganti RDBMS jadi NoSQL, tapi untuk flexible columns</li>
+                        <li><strong>Invisible Indexes</strong> — Test performance impact tanpa drop index</li>
+                        <li><strong>Cached SHA-2 Authentication</strong> — Lebih cepat dan aman</li>
+                        <li><strong>Descending Indexes</strong> — Performance boost untuk ORDER BY DESC</li>
+                    </ul>
+
+                    <p>Fitur-fitur yang dulu cuma ada di PostgreSQL, sekarang udah ada di MySQL. Gap-nya makin kecil.</p>
+
+                    <h2 id="4-familiarity-matter">4. Familiarity Matters</h2>
+                    <p>Ini faktor yang sering diremehkan. Dalam tim development, <strong>kecepatan onboarding dan troubleshooting</strong> itu bernilai uang.</p>
+
+                    <p>MySQL adalah database yang paling banyak dipakai di dunia. Artinya:</p>
+
+                    <ul>
+                        <li><strong>Stack Overflow answers</strong> — Hampir semua masalah sudah ada solusinya</li>
+                        <li><strong>DBA availability</strong> — Lebih mudah cari orang yang ngerti MySQL</li>
+                        <li><strong>ORM support</strong> — Eloquent (Laravel), Doctrine, Hibernate — semua first-class support MySQL</li>
+                        <li><strong>Monitoring tools</strong> — MySQL Workbench, phpMyAdmin, Adminer, dan banyak lagi</li>
+                    </ul>
+
+                    <p>Ketika production database bermasalah jam 2 pagi, kamu butuh orang yang bisa fix cepat. Dan kemungkinan besar, orang itu ngerti MySQL.</p>
+
+                    <h2 id="5-pengalaman-production-yang-nyata">5. Pengalaman Production yang Nyata</h2>
+                    <p>Saya handle beberapa production systems yang melayani ratusan user aktif harian, dan MySQL handle-nya dengan baik selama:</p>
+
+                    <ol>
+                        <li><strong>Indexing yang proper</strong> — Bukan cuma bikin index, tapi index yang BENAR</li>
+                        <li><strong>Query optimization</strong> — EXPLAIN adalah sahabat terbaik</li>
+                        <li><strong>Connection pooling</strong> — Hindari too many connections</li>
+                        <li><strong>Backup strategy</strong> — mysqldump + binary logs untuk point-in-time recovery</li>
+                        <li><strong>Monitoring</strong> — Slow query log, performance schema</li>
+                    </ol>
+
+                    <p>MySQL tidak akan auto-magically cepat. Tapi dengan konfigurasi yang tepat, ia bisa handle beban yang jauh lebih besar dari yang kebanyakan orang kira.</p>
+
+                    <h2 id="kapan-saya-pilih-postgresql">Kapan Saya Pilih PostgreSQL?</h2>
+                    <p>Saya jujur — ada kasus di mana saya akan pilih PostgreSQL:</p>
+
+                    <ul>
+                        <li><strong>Complex analytical queries</strong> — Window functions, materialized views</li>
+                        <li><strong>Geospatial data</strong> — PostGIS masih nomor satu</li>
+                        <li><strong>Full-text search yang advanced</strong> — PostgreSQL search lebih powerful</li>
+                        <li><strong>Complex data types</strong> — Arrays, hstore, custom types</li>
+                    </ul>
+
+                    <p>Tapi untuk <strong>CRUD apps, e-commerce, SaaS, dan API backends</strong> — MySQL lebih dari cukup.</p>
+
+                    <h2 id="tips-untuk-mysql-di-production">Tips untuk MySQL di Production</h2>
+                    <p>Berdasarkan pengalaman (termasuk incident tabel corrupt tadi), ini tips yang saya rekomendasikan:</p>
+
+                    <ol>
+                        <li><strong>Gunakan InnoDB, bukan MyISAM</strong> — Ini non-negotiable di 2026</li>
+                        <li><strong>Aktifkan binary logging</strong> — Penting untuk backup dan replication</li>
+                        <li><strong>Setup monitoring dari awal</strong> — Slow query log, performance schema, atau external monitoring seperti PMM</li>
+                        <li><strong>Backup otomatis</strong> — Daily mysqldump + test restore secara berkala</li>
+                        <li><strong>Aktifkan ECC di BIOS</strong> — Jika RAM mendukung, ECC bisa prevent silent data corruption</li>
+                        <li><strong>Persistent journaling</strong> — Pastikan journalctl diset persistent, supaya bisa debug pasca-crash</li>
+                    </ol>
+
+                    <h2 id="kesimpulan">Kesimpulan</h2>
+                    <p>MySQL di 2026 bukan MySQL yang sama dengan 10 tahun lalu. Dengan InnoDB sebagai default, MySQL 8.0+ features, dan ecosystem yang mature, MySQL tetap menjadi pilihan yang solid untuk kebanyakan use cases.</p>
+
+                    <p>Tidak perlu migrasi ke PostgreSQL cuma karena "orang bilang lebih bagus". Evaluate kebutuhan kamu, pertimbangkan trade-offs, dan buat keputusan yang informed.</p>
+
+                    <p class="article-ending"><strong>TL;DR:</strong> MySQL 8.0+ udah jauh dari image "lemah" yang dulu. Pilih database berdasarkan kebutuhan, bukan hype. Dan kalau masih ada tabel MyISAM di production — migrasi ke InnoDB sekarang juga.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="article-footer">
+            <div class="container">
+                <div class="author-bio">
+                    <div class="author-info">
+                        <h4>Victor Fendi</h4>
+                        <p>Software Engineer based in Kudus, Indonesia. Building clean, efficient, and scalable solutions.</p>
+                    </div>
+                    <div class="author-links">
+                        <a href="../index.html#contact">Contact</a>
+                        <a href="https://github.com/fendivictor" target="_blank" rel="noopener">GitHub</a>
+                        <a href="https://linkedin.com/in/fendivictor" target="_blank" rel="noopener">LinkedIn</a>
+                    </div>
+                </div>
+
+                <div class="article-navigation">
+                    <a href="why-laravel-2026.html" class="btn btn-secondary">← Why Laravel 2026</a>
+                    <a href="../blog.html" class="btn btn-primary">Back to Blog →</a>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+        </div>
+    </footer>
+</body>
+</html>
