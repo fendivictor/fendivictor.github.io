@@ -378,6 +378,22 @@ section {
     margin: 20px 32px;
 }
 
+.blog-tags span {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.blog-tags span:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .blog-link {
     color: var(--accent);
     font-weight: 500;
