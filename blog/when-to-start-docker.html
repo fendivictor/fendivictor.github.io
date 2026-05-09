@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kapan sebenarnya waktu yang tepat mulai menggunakan Docker? Perspektif dari developer yang handle production systems — dari overengineering sampai momen 'aha'.">
+    <meta name="author" content="Victor Fendi">
+    <title>Kapan Waktunya Mulai Menggunakan Docker? | Victor Fendi</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/article.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">VF.</a>
+            <ul class="nav-links">
+                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#skills">Skills</a></li>
+                <li><a href="../index.html#projects">Projects</a></li>
+                <li><a href="../blog.html" class="active">Blog</a></li>
+                <li><a href="../index.html#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Article -->
+    <article class="article">
+        <header class="article-header">
+            <div class="container">
+                <div class="article-meta">
+                    <span class="article-date">May 9, 2026</span>
+                    <span class="article-category">DevOps / Docker</span>
+                    <span class="article-read-time">7 min read</span>
+                </div>
+                <h1 class="article-title">Kapan Waktunya Mulai Menggunakan Docker?</h1>
+                <p class="article-subtitle">Bukan pertanyaan "apa itu Docker", tapi "kapan aku butuh Docker?" — karena tidak semua project perlu containerized.</p>
+                <div class="article-tags">
+                    <span>Docker</span>
+                    <span>DevOps</span>
+                    <span>Backend Development</span>
+                    <span>Opinion</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="article-content">
+            <div class="container">
+                <div class="content">
+                    <p class="lead">Docker ada di mana-mana. Tutorial, conference talk, job description — semua nanya pengalaman Docker. Tapi pertanyaan yang sebenarnya jarang dibahas: <em>kapan sih waktu yang tepat mulai pakai Docker?</em> Bukan "apa itu Docker", tapi "apakah projectku butuh Docker?"</p>
+
+                    <h2 id="1-dulu-aku-juga-nanya-begini">1. Dulu, Aku Juga Nanya Begini</h2>
+                    <p>Saya ingat dulu pertama kali denger Docker. Waktu itu masih development biasa — PHP di XAMPP, deploy via FTP, dan database langsung di server. Semua berjalan, semua fine. Lalu saya lihat teman yang pakai Docker, dan reaksi pertama saya: <em>"Ribet amat, buat apa?"</em></p>
+
+                    <p>Ternyata, reaksi itu wajar. Dan sekarang setelah beberapa tahun pakai Docker di production, saya mau share perspective tentang kapan kamu <strong>sebenarnya</strong> butuh Docker, dan kapan kamu bisa skip dulu.</p>
+
+                    <h2 id="2-kapan-kamu-belum-perlu-docker">2. Kapan Kamu Belum Perlu Docker</h2>
+                    <p>Yap, aku bilang dulu. Ada kalanya Docker itu <strong>overengineering</strong>. Ini kondisi di mana kamu bisa skip Docker:</p>
+
+                    <ul>
+                        <li><strong>Single simple app</strong> — Kalau projectmu cuma satu Laravel app dengan MySQL, langsung install di server biasa aja. Docker nanti bikin complexitas yang gak perlu.</li>
+                        <li><strong>Tim kecil, infra sederhana</strong> — 1-2 developer, 1 server VPS, gak perlu scaling. Setup manual masih manageable.</li>
+                        <li><strong>Learning curve yang menghambat</strong> — Kalau tim baru belajar Docker, dan project deadline ketat, jangan paksa. Deadline dulu, Docker belakangan.</li>
+                        <li><strong>Shared hosting</strong> — Beberapa shared hosting gak support Docker. Jangan paksakan kalau infrastruktur-nya gak mendukung.</li>
+                    </ul>
+
+                    <blockquote>
+                        <p>Docker itu alat, bukan tujuan. Jangan pakai Docker cuma karena keren — pakai karena ada masalah yang perlu dipecahkan.</p>
+                    </blockquote>
+
+                    <h2 id="3-momen-aha-kapan-docker-mulai-terasa-perlu">3. Momen "Aha" — Kapan Docker Mulai Terasa Perlu</h2>
+                    <p>Ini titik-titik di mana biasanya developer mulai merasa butuh Docker:</p>
+
+                    <h3>"Works on My Machine" Syndrome</h3>
+                    <p>Kamu deploy code ke server, dan tiba-tiba ada error yang gak muncul di lokal. Ternyata versi PHP beda, extension beda, atau config environment beda. Docker menyelesaikan ini dengan cara yang elegan — <strong>environment yang sama di mana pun</strong>.</p>
+
+                    <h3>Multiple Services yang Perlu Berjalan Bareng</h3>
+                    <p>Projectmu tumbuh. Sekarang butuh: Laravel, MySQL, Redis, Queue Worker, dan mungkin Node.js untuk frontend build. Setup manual berarti install semua itu di setiap environment — developer laptop, staging server, production server. Docker Compose bikin semua ini jadi satu <code>docker-compose up</code>.</p>
+
+                    <h3>Tim Bertambah, Onboarding Jadi Masalah</h3>
+                    <p>Developer baru join, dan butuh 2 hari cuma untuk setup environment lokal. Dengan Docker, prosesnya jadi: clone repo, <code>docker-compose up</code>, done. Setup environment dari berjam-jam jadi hitungan menit.</p>
+
+                    <h3>Deploy Jadi Horor</h3>
+                    <p>Setiap deploy butuh ritual panjang: pull code, install dependency, clear cache, restart service, cek log. Salah satu langkah gagal, bisa down berjam-jam. Docker image yang sudah di-build dan tested menjamin apa yang jalan di staging sama persis dengan yang jalan di production.</p>
+
+                    <h3>Need to Scale</h3>
+                    <p>Traffic naik, satu server gak cukup. Kamu butuh run multiple instances, load balancing, auto-scaling. Docker (dikombinasi dengan Kubernetes atau docker swarm) bikin ini feasible tanpa harus manage VM secara manual.</p>
+
+                    <h2 id="4-docker-bukan-magic-wand">4. Docker Bukan Magic Wand</h2>
+                    <p>Ini penting disampaikan. Docker solve banyak masalah, tapi bukan berarti Docker gak punya masalah sendiri:</p>
+
+                    <ul>
+                        <li><strong>Learning curve</strong> — Dockerfile, Docker Compose, networking, volumes, image layering — ada banyak konsep yang perlu dipahami</li>
+                        <li><strong>Debugging lebih sulit</strong> — Debug container kadang butuh tools dan mindset yang beda</li>
+                        <li><strong>Disk space</strong> — Docker images bisa makan banyak disk kalau gak dikelola dengan baik</li>
+                        <li><strong>Security concerns</strong> — Container gak auto-secure. Perlu paham tentang least privilege, image scanning, dan secret management</li>
+                        <li><strong>State management</strong> — Database di container? Bisa, tapi hati-hati dengan data persistence</li>
+                    </ul>
+
+                    <h2 id="5-pola-pikir-yang-salah-tentang-docker">5. Pola Pikir yang Salah Tentang Docker</h2>
+                    <p>Beberapa misconception yang sering ketemu:</p>
+
+                    <h3>"Semua harus di-Docker"</h3>
+                    <p>Gak juga. Database production sebaiknya di managed service (RDS, Cloud SQL, dll), bukan di container sendiri — kecuali kamu punya alasan spesifik dan tim yang capable manage-nya.</p>
+
+                    <h3>"Docker = Production Ready"</h3>
+                    <p>Docker container bisa jalan di laptop, tapi belum tentu production-ready. Ada banyak hal yang perlu diperhatikan: health checks, restart policies, resource limits, logging, monitoring, dan masih banyak lagi.</p>
+
+                    <h3>"Docker bikin app jadi lebih cepat"</h3>
+                    <p>Docker bisa bikin app lebih lambat karena layer tambahan. Tapi trade-off-nya worth it: consistency, isolation, dan reproducibility.</p>
+
+                    <h2 id="6-ponsel-mulai-dari-sini">6. Ponsel, Mulai dari Sini</h2>
+                    <p>Kalau kamu merasa sudah waktunya belajar Docker, ini roadmap yang saya sarankan:</p>
+
+                    <ol>
+                        <li><strong>Pahami dulu konsep dasar</strong> — Container vs VM, image vs container, layer, volume, network</li>
+                        <li><strong>Buat Dockerfile sederhana</strong> — Containerize aplikasi yang sudah ada, misalnya Laravel app</li>
+                        <li><strong>Belajar Docker Compose</strong> — Multiple services yang saling terhubung</li>
+                        <li><strong>Setup development environment</strong> — Bikin docker-compose.yml yang bisa dipakai seluruh tim</li>
+                        <li><strong>Deploy ke production</strong> — Mulai dari yang sederhana, pelajari best practices seiring waktu</li>
+                    </ol>
+
+                    <p>Jangan lompat langsung ke Kubernetes. Itu seperti belajar nyetir langsung di Formula 1. Step by step.</p>
+
+                    <h2 id="7-checklist-sebelum-containerize-project">7. Checklist Sebelum Containerize Project</h2>
+                    <p>Sebelum kamu mulai containerize project, pastikan:</p>
+
+                    <ul>
+                        <li><strong>12-factor app methodology</strong> — Config dari environment variable, bukan hardcoded</li>
+                        <li><strong>Stateless design</strong> — Session dan file upload di-handle terpisah (Redis/S3), bukan di lokal filesystem</li>
+                        <li><strong>Proper logging</strong> — Log ke stdout/stderr, bukan ke file di dalam container</li>
+                        <li><strong>Health check endpoint</strong> — Biar orchestrator tahu kalau container sehat atau tidak</li>
+                        <li><strong>Lean base image</strong> — Jangan pakai image yang gede buat cuma menjalankan PHP app. Alpine-based image cukup untuk kebanyakan use case</li>
+                    </ul>
+
+                    <h2 id="kesimpulan">Kesimpulan</h2>
+                    <p>Docker itu investasi. Waktu awal bakal terasa lebih lambat — tulis Dockerfile, setup Compose, debug networking. Tapi setelah setup benar, produktivitas naik drastis. Deploy jadi konsisten, onboarding jadi cepat, dan debugging environment issue jadi masalah masa lalu.</p>
+
+                    <p>Tapi jangan paksa. Mulai dari masalah nyata yang kamu hadapi. Kalau "works on my machine" sudah jadi momok berulang — itu tandanya waktunya Docker.</p>
+
+                    <p class="article-ending"><strong>TL;DR:</strong> Mulai pakai Docker bukan karena hype, tapi karena kamu mulai merasakan pain point: environment inconsistency, deploy ritual yang panjang, onboarding yang lambat, atau scaling yang susah. Kalau projectmu masih simple dan bisa di-handle tanpa Docker — gak usah dipaksa. Tapi kalau sudah mulai terasa pain, Docker adalah investasi yang worth it.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="article-footer">
+            <div class="container">
+                <div class="author-bio">
+                    <div class="author-info">
+                        <h4>Victor Fendi</h4>
+                        <p>Software Engineer based in Kudus, Indonesia. Building clean, efficient, and scalable solutions.</p>
+                    </div>
+                    <div class="author-links">
+                        <a href="../index.html#contact">Contact</a>
+                        <a href="https://github.com/fendivictor" target="_blank" rel="noopener">GitHub</a>
+                        <a href="https://linkedin.com/in/fendivictor" target="_blank" rel="noopener">LinkedIn</a>
+                    </div>
+                </div>
+
+                <div class="article-navigation">
+                    <a href="why-mysql-2026.html" class="btn btn-secondary">← Why MySQL 2026</a>
+                    <a href="../blog.html" class="btn btn-primary">Back to Blog →</a>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+        </div>
+    </footer>
+</body>
+</html>
