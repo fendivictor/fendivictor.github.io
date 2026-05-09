@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -18,11 +21,11 @@
         <div class="container">
             <a href="../index.html" class="logo">VF.</a>
             <ul class="nav-links">
-                <li><a href="../index.html#about">About</a></li>
-                <li><a href="../index.html#skills">Skills</a></li>
-                <li><a href="../index.html#projects">Projects</a></li>
-                <li><a href="../blog.html" class="active">Blog</a></li>
-                <li><a href="../index.html#contact">Contact</a></li>
+                <li><a href="../index.html#about"><i data-lucide="user" class="nav-icon"></i> About</a></li>
+                <li><a href="../index.html#skills"><i data-lucide="wrench" class="nav-icon"></i> Skills</a></li>
+                <li><a href="../index.html#projects"><i data-lucide="folder-open" class="nav-icon"></i> Projects</a></li>
+                <li><a href="../blog.html" class="active"><i data-lucide="pen-line" class="nav-icon"></i> Blog</a></li>
+                <li><a href="../index.html#contact"><i data-lucide="mail" class="nav-icon"></i> Contact</a></li>
             </ul>
         </div>
     </nav>
@@ -183,8 +186,16 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+            <div class="footer-content">
+                <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+                <div class="footer-socials">
+                    <a href="https://github.com/fendivictor" target="_blank" rel="noopener" aria-label="GitHub"><i class="devicon-github-original"></i></a>
+                    <a href="https://www.linkedin.com/in/victor-noor-fendi-8559a9112/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="devicon-linkedin-plain"></i></a>
+                    <a href="https://twitter.com/fendivn" target="_blank" rel="noopener" aria-label="Twitter"><i data-lucide="twitter" class="footer-icon"></i></a>
+                </div>
+            </div>
         </div>
     </footer>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

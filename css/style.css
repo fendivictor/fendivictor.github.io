@@ -75,10 +75,18 @@ a {
     color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .nav-links a:hover {
     color: var(--text-primary);
+}
+
+.nav-icon {
+    width: 16px;
+    height: 16px;
 }
 
 /* Hero Section */
@@ -87,6 +95,32 @@ a {
     display: flex;
     align-items: center;
     padding-top: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
 }
 
 .hero-content {
@@ -202,10 +236,21 @@ section {
     list-style: none;
 }
 
-.skill-category li {
+.skills-list-icons li {
     color: var(--text-secondary);
     margin-bottom: 12px;
     font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.skills-list-icons li i,
+.skills-list-icons li .devicon {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 /* Projects */
@@ -237,10 +282,10 @@ section {
 
 .blog-card {
     background: var(--bg-primary);
-    padding: 32px;
     border-radius: 12px;
     border: 1px solid var(--border);
     transition: transform 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
 }
 
 .blog-card:hover {
@@ -248,11 +293,59 @@ section {
     border-color: var(--accent);
 }
 
+.blog-thumbnail {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.docker-thumb {
+    background: linear-gradient(135deg, #0a3d62, #1a5276, #2471a3);
+}
+
+.mysql-thumb {
+    background: linear-gradient(135deg, #1a472a, #1e6f3e, #27ae60);
+}
+
+.laravel-thumb {
+    background: linear-gradient(135deg, #6b1d1d, #c0392b, #e74c3c);
+}
+
+.blog-thumb-icon {
+    width: 48px;
+    height: 48px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.blog-card .blog-meta,
+.blog-card .blog-title,
+.blog-card .blog-excerpt,
+.blog-card .blog-tags,
+.blog-card .blog-link {
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+.blog-card .blog-meta {
+    margin-top: 20px;
+}
+
 .blog-meta {
     display: flex;
     gap: 12px;
     margin-bottom: 16px;
     font-size: 13px;
+}
+
+.meta-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: -2px;
+    margin-right: 4px;
 }
 
 .blog-date {
@@ -278,10 +371,19 @@ section {
     margin-bottom: 20px;
 }
 
+.blog-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 32px;
+}
+
 .blog-link {
     color: var(--accent);
     font-weight: 500;
     font-size: 14px;
+    display: block;
+    padding-bottom: 32px;
 }
 
 .blog-link:hover {
@@ -370,11 +472,25 @@ section {
     border: 1px solid var(--border);
     border-radius: 8px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .contact-link:hover {
     border-color: var(--accent);
     color: var(--accent);
+}
+
+.contact-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.contact-link .devicon {
+    font-size: 18px;
+    width: 18px;
+    text-align: center;
 }
 
 /* Footer */
@@ -384,9 +500,36 @@ section {
     text-align: center;
 }
 
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
 .footer p {
     color: var(--text-secondary);
     font-size: 14px;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-socials a {
+    color: var(--text-secondary);
+    font-size: 20px;
+    transition: color 0.3s ease;
+}
+
+.footer-socials a:hover {
+    color: var(--accent);
+}
+
+.footer-icon {
+    width: 20px;
+    height: 20px;
 }
 
 /* Mobile Responsive */
