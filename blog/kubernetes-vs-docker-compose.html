@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kubernetes vs Docker Compose — mana yang sebenarnya kamu butuhkan? Jawabannya mungkin gak sesuai ekspektasi.">
+    <meta name="author" content="Victor Fendi">
+    <title>Kubernetes vs Docker Compose: Mana yang Sebenarnya Kamu Butuhkan? | Victor Fendi</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/article.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">VF.</a>
+            <ul class="nav-links">
+                <li><a href="../index.html#about"><i data-lucide="user" class="nav-icon"></i> About</a></li>
+                <li><a href="../index.html#skills"><i data-lucide="wrench" class="nav-icon"></i> Skills</a></li>
+                <li><a href="../index.html#projects"><i data-lucide="folder-open" class="nav-icon"></i> Blog</a></li>
+                <li><a href="../blog.html" class="active"><i data-lucide="pen-line" class="nav-icon"></i> Blog</a></li>
+                <li><a href="../index.html#contact"><i data-lucide="mail" class="nav-icon"></i> Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Article -->
+    <article class="article">
+        <header class="article-header">
+            <div class="container">
+                <div class="article-meta">
+                    <span class="article-date">May 10, 2026</span>
+                    <span class="article-category">DevOps / Architecture</span>
+                    <span class="article-read-time">8 min read</span>
+                </div>
+                <h1 class="article-title">Kubernetes vs Docker Compose: Mana yang Sebenarnya Kamu Butuhkan?</h1>
+                <p class="article-subtitle">Bukan soal mana yang lebih bagus — tapi mana yang tepat untuk masalahmu. Spoiler: kebanyakan orang gak butuh Kubernetes.</p>
+                <div class="article-tags">
+                    <span>Kubernetes</span>
+                    <span>Docker</span>
+                    <span>DevOps</span>
+                    <span>Architecture</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="article-content">
+            <div class="container">
+                <div class="content">
+                    <p class="lead">Kalau kamu sering scroll LinkedIn atau Twitter developer, kamu pasti sering lihat: "Kami migrasi ke Kubernetes!" atau "Kubernetes is the future!" Tapi sebenernya — berapa banyak dari kita yang <em>benar-benar</em> butuh Kubernetes? Dan apa bedanya sama Docker Compose yang sudah cukup powerful?</p>
+
+                    <h2 id="analogi-sederhana">Analogi Sederhana</h2>
+                    <p>Sebelum masuk ke teknis, bayangin aja gini:</p>
+                    <p><strong>Docker Compose itu kayak meracik kopi sendiri di dapur.</strong> Kamu punya mesin kopi, grinder, dan susu. Tinggal pencet tombol, kopi jadi. Semua ada di satu tempat, kamu kontrol penuh, dan kalau ada yang salah — tinggal cek langsung.</p>
+                    <p><strong>Kubernetes itu kayak mengelola 50 cabang kedai kopi.</strong> Kamu butuh sistem: stok kopi harus merata, karyawan harus shift, kalau satu mesin mati harus ada backup, dan semuanya harus jalan 24/7. Complex, tapi perlu kalau skala-nya sudah gede.</p>
+                    <p>Masalahnya: banyak yang punya 1 mesin kopi tapi belanja sistem manajemen 50 cabang.</p>
+
+                    <h2 id="apa-sih-docker-compose">Apa Sih Docker Compose?</h2>
+                    <p>Docker Compose adalah alat untuk menjalankan <strong>beberapa container sekaligus</strong> di satu mesin. Contoh: kamu punya aplikasi Laravel yang butuh PHP, MySQL, dan Redis. Dengan Docker Compose, kamu tulis sekali di file <code>docker-compose.yml</code>, lalu jalankan:</p>
+                    <pre><code>docker-compose up -d</code></pre>
+                    <p>Semua service jalan bareng, bisa saling komunikasi, dan hidup di satu server. Done.</p>
+                    <p>Docker Compose itu simpel, understandable, dan untuk kebanyakan project — <strong>sudah cukup</strong>.</p>
+
+                    <h2 id="apa-sih-kubernetes-sebenarnya">Apa Sih Kubernetes Sebenarnya?</h2>
+                    <p>Kubernetes (atau K8s, biar keliatan keren) adalah <strong>orchestrator untuk container</strong>. Artinya, dia mengatur container-container kamu di <em>banyak mesin sekaligus</em>.</p>
+                    <p>Kalau Docker Compose ngurus container di <strong>satu server</strong>, Kubernetes ngurus container di <strong>banyak server</strong> — secara otomatis. Dia yang ngurus:</p>
+                    <ul>
+                        <li><strong>Auto-scaling</strong> — Traffic naik? K8s otomatis bikin container baru. Turun? Container dikurangi.</li>
+                        <li><strong>Self-healing</strong> — Container mati? K8s otomatis nge-restart tanpa kamu sentuh.</li>
+                        <li><strong>Load balancing</strong> — Request dibagi rata ke semua container yang jalan.</li>
+                        <li><strong>Rolling updates</strong> — Update aplikasi tanpa downtime. Yang lama diganti pelan-pelan.</li>
+                        <li><strong>Multi-server management</strong> — Container bisa jalan di mana saja dalam cluster K8s.</li>
+                    </ul>
+                    <p>Kedengarannya keren banget kan? Tapi — ada "tapi"-nya.</p>
+
+                    <h2 id="kenapa-banyak-yang-salah-pilih">Kenapa Banyak yang Salah Pilih</h2>
+                    <p>Aku pernah ngobrol sama developer yang kerjanya handle 3 aplikasi kecil, tapi setup K8s lengkap dengan multiple nodes, Helm charts, dan Istio service mesh. Hasilnya? <strong>Lebih banyak waktu dihabiskan ngurus infrastruktur daripada ngoding fitur.</strong></p>
+                    <p>Ini yang sering terjadi:</p>
+                    <ul>
+                        <li><strong>FOMO teknologi</strong> — "Semua orang pakai K8s, aku harus juga!" Padahal kebutuhan mereka belum sampai situ.</li>
+                        <li><strong>Over-engineering sejak awal</strong> — Daripada nanti susah migrate, mending langsung K8s. Realitanya, "nanti" sering gak pernah datang.</li>
+                        <li><strong>Developer experience drop</strong> — K8s itu powerful tapi complex. Learning curve-nya tinggi, dan debug-nya... challenge.</li>
+                    </ul>
+                    <blockquote>
+                        <p>Gunakan solusi paling sederhana yang bisa solve masalahmu. Bukan solusi paling canggih yang bisa kamu beli.</p>
+                    </blockquote>
+
+                    <h2 id="kapan-docker-compose-cukup">Kapan Docker Compose Sudah Cukup</h2>
+                    <p>Jawaban singkat: <strong>untuk 80% project kebanyakan developer</strong>, Docker Compose sudah cukup. Spesifiknya:</p>
+                    <ul>
+                        <li><strong>Aplikasi dengan traffic sedang</strong> — Ratusan sampai ribuan request per detik masih bisa di-handle 1 server yang bener.</li>
+                        <li><strong>Tim kecil</strong> — 1-5 developer. Gak butuh complex infrastructure management.</li>
+                        <li><strong>Single-region deployment</strong> — App cuma jalan di satu negara/region, gak butuh multi-location redundancy.</li>
+                        <li><strong>Startup / MVP phase</strong> — Fokus ke fitur dan validasi produk, bukan infrastruktur.</li>
+                        <li><strong>SaaS kecil-menengah</strong> — Produk sudah jalan tapi belum skala enterprise.</li>
+                    </ul>
+                    <p>Kalau kamu di salah satu kategori ini, Docker Compose + 1 VPS yang bener (atau 2 untuk backup) sudah solid. Tambah monitoring basic (UptimeRobot, Laravel Telescope) dan kamu sudah punya setup yang reliable.</p>
+
+                    <h2 id="kapan-kamu-benar-benar-butuh-kubernetes">Kapan Kamu Benar-Benar Butuh Kubernetes</h2>
+                    <p>Oke, kapan sih Kubernetes jadi jawaban yang tepat? Ini kondisi-kondisinya:</p>
+                    <h3>Traffic Sangat Tinggi dan Fluktuatif</h3>
+                    <p>Kamu handle ratusan ribu hingga jutaan request per detik, dan traffic-nya gak prediksi (misalnya e-commerce saat flash sale). Auto-scaling K8s di sini terasa worth it — container baru otomatis muncul saat traffic naik, hilang saat turun.</p>
+
+                    <h3>Butuh High Availability 24/7</h3>
+                    <p>Satu server mati = jutaan rupiah hilang? K8s memastikan aplikasi tetap jalan meskipun ada server yang down. Self-healing-nya bukan gimmick — ini save lives (dan revenue) di production.</p>
+
+                    <h3>Banyak Tim Banyak Aplikasi</h3>
+                    <p>Perusahaanmu punya 10+ tim yang deploy puluhan microservices. Masing-masing tim butuh independent deployment, dan semuanya harus bisa jalan tanpa saling ganggu. K8s bikin ini manageable.</p>
+
+                    <h3>Multi-Region Deployment</h3>
+                    <p>User kamu ada di seluruh Asia, dan kamu perlu deploy di Singapore, Jakarta, Tokyo sekaligus. K8s cluster bisa span multiple region dengan manajemen terpusat.</p>
+
+                    <h3>Compliance dan Security Requirements</h3>
+                    <p>Beberapa industri (finance, healthcare) butuh strict isolation antar service, audit trail, dan controlled rollout. K8s punya namespace, network policy, dan RBAC yang support kebutuhan ini.</p>
+
+                    <h2 id="the-sweet-spot-di-tengah-tengah">The Sweet Spot (di Tengah-Tengah)</h2>
+                    <p>Nah, banyak yang mikir: "Tapi kalau nanti traffic naik, repot dong migrate dari Compose ke K8s?"</p>
+                    <p>Jawabannya: <strong>emang iya, tapi gak seberapa repot maintain K8s dari sekarang.</strong></p>
+                    <p>Tapi ada jalan tengah buat mereka yang merasa sudah "kejepit" antara Compose dan K8s:</p>
+                    <ul>
+                        <li><strong>Docker Swarm</strong> — "Kubernetes versi mini". Multi-container orchestration tapi way simpler. Sayangnya, development-nya agak stagnan.</li>
+                        <li><strong>Managed Kubernetes (GKE, EKS, AKS)</strong> — Kalau tetap mau K8s tapi gak mau manage cluster sendiri, managed service-nya cukup membantu. Tapi tetap, K8s tetap K8s.</li>
+                        <li><strong>PaaS (Laravel Forge, DigitalOcean App Platform)</strong> — Ini actually sweet spot buat kebanyakan developer. Kamu deploy code, platform yang urus sisanya. Gak perlu Docker, gak perlu K8s.</li>
+                    </ul>
+                    <p>Yeah, aku bilang itu. <strong>Kadang kamu bahkan gak perlu Docker Compose.</strong> PaaS yang bener bisa solve masalahmu tanpa kamu harus paham container orchestration sama sekali.</p>
+
+                    <h2 id="pengalaman-pribadi">Pengalaman Pribadi</h2>
+                    <p>Saya sendiri mulai dari Docker Compose untuk hampir semua project. Setup-nya simpel, gampang dijelaskan ke tim, dan kalau ada masalah — debug-nya straightforward.</p>
+                    <p>Ada satu project yang traffic-nya mulai gak ke-handle 1 server. Alih-alih langsung lompat ke K8s, saya coba dulu:</p>
+                    <ol>
+                        <li><strong>Optimize dulu yang ada</strong> — Cache strategy, query optimization, CDN untuk static assets.</li>
+                        <li><strong>Scale vertically</strong> — Upgrade server (RAM, CPU). Sering kali ini sudah cukup.</li>
+                        <li><strong>Separate services</strong> — Queue worker dan web app jalan di server berbeda. Masih pakai Docker Compose.</li>
+                    </ol>
+                    <p>Tiga langkah ini sudah solve masalah selama berminggu-minggu. Belum perlu K8s sampai saat ini untuk project-project saya.</p>
+                    <p>Tapi aku juga gak bilang K8s itu overrated. Untuk skala yang tepat, K8s itu game changer. Cuma — kebanyakan dari kita <strong>belum</strong> di skala itu.</p>
+
+                    <h2 id="kesimpulan">Kesimpulan</h2>
+                    <p>Gini aja, bikin checklist simple:</p>
+                    <ul>
+                        <li>1-2 server? <strong>Docker Compose.</strong></li>
+                        <li>Perlu auto-scale dan self-healing? <strong>Mulai pertimbangkan K8s.</strong></li>
+                        <li>Punya tim DevOps khusus? <strong>K8s masuk akal.</strong></li>
+                        <li>Tim kecil, fokus ke produk? <strong>Docker Compose atau PaaS.</strong></li>
+                        <li>Migrasi dari Compose ke K8s nanti susah? <strong>Lebih susah maintain K8s sekarang tanpa butuh.</strong></li>
+                    </ul>
+                    <p>Intinya: <strong>mulai dari yang sederhana, evolve butuhannya.</strong> Docker Compose hari ini, Kubernetes besok kalau memang sudah waktunya. Bukan sebaliknya.</p>
+                    <p>Jangan terjebak "karena semua orang pakai, aku harus pakai". Teknologi itu alat, bukan status symbol. Pakai yang solve masalahmu, bukan yang paling keren di LinkedIn.</p>
+
+                    <p class="article-ending"><strong>TL;DR:</strong> Docker Compose untuk 80% kasus sudah cukup — simpel, powerful, dan gak butuh tim DevOps khusus. Kubernetes untuk skala besar: traffic tinggi, high availability, multi-team, multi-region. Kalau kamu ragu, kemungkinan besar jawabannya Docker Compose. Dan kalau bahkan Docker terasa ribet, PaaS seperti Laravel Forge atau DigitalOcean App Platform mungkin justru yang kamu butuhkan.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="article-footer">
+            <div class="container">
+                <div class="author-bio">
+                    <div class="author-info">
+                        <h4>Victor Fendi</h4>
+                        <p>Software Engineer based in Kudus, Indonesia. Building clean, efficient, and scalable solutions.</p>
+                    </div>
+                    <div class="author-links">
+                        <a href="../index.html#contact">Contact</a>
+                        <a href="https://github.com/fendivictor" target="_blank" rel="noopener">GitHub</a>
+                        <a href="https://linkedin.com/in/fendivictor" target="_blank" rel="noopener">LinkedIn</a>
+                    </div>
+                </div>
+
+                <div class="article-navigation">
+                    <a href="when-to-start-docker.html" class="btn btn-secondary">← Kapan Mulai Docker</a>
+                    <a href="../blog.html" class="btn btn-primary">Back to Blog →</a>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+                <div class="footer-socials">
+                    <a href="https://github.com/fendivictor" target="_blank" rel="noopener" aria-label="GitHub"><i class="devicon-github-original"></i></a>
+                    <a href="https://www.linkedin.com/in/victor-noor-fendi-8559a9112/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="devicon-linkedin-plain"></i></a>
+                    <a href="https://twitter.com/fendivn" target="_blank" rel="noopener" aria-label="Twitter"><i data-lucide="twitter" class="footer-icon"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
