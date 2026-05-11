@@ -314,6 +314,13 @@ section {
     background: linear-gradient(135deg, #6b1d1d, #c0392b, #e74c3c);
 }
 
+.openclaw-thumb {
+    background: linear-gradient(135deg, #2d1854, #5227cc, #6C3FE0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .blog-thumb-icon {
     width: 48px;
     height: 48px;

@@ -1,919 +1,204 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Memanfaatkan OpenClaw sebagai Asisten Pengembang Web dan Copywriter</title>
-  <meta name="description" content="Pelajari bagaimana OpenClaw, AI asisten self-hosted, bisa menjadi partner andalan untuk pengembangan web dan penulisan copy yang efektif.">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
-    :root {
-      --primary: #6C3FE0;
-      --primary-light: #8B5CF6;
-      --primary-dark: #5227CC;
-      --accent: #F59E0B;
-      --bg: #FAFAFA;
-      --surface: #FFFFFF;
-      --text: #1A1A2E;
-      --text-secondary: #555770;
-      --text-muted: #9CA3AF;
-      --border: #E5E7EB;
-      --code-bg: #1E1E2E;
-      --code-text: #CDD6F4;
-      --success: #10B981;
-      --gradient-1: linear-gradient(135deg, #6C3FE0 0%, #A855F7 50%, #EC4899 100%);
-      --gradient-2: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-      --shadow-md: 0 4px 20px rgba(0,0,0,0.1);
-      --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
-      --shadow-glow: 0 0 60px rgba(108, 63, 224, 0.15);
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.75;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Navigation */
-    .nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-    }
-
-    .nav-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-
-    .nav-logo {
-      font-weight: 800;
-      font-size: 1.2rem;
-      color: var(--primary);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .nav-logo span { font-size: 1.4rem; }
-
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 0.9rem;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--primary); }
-
-    /* Hero */
-    .hero {
-      padding: 10rem 2rem 5rem;
-      text-align: center;
-      background: linear-gradient(180deg, rgba(108,63,224,0.04) 0%, transparent 100%);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 800px;
-      height: 800px;
-      background: radial-gradient(circle, rgba(108,63,224,0.08) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(108,63,224,0.08);
-      color: var(--primary);
-      padding: 0.4rem 1rem;
-      border-radius: 100px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
-
-    .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-      position: relative;
-    }
-
-    .hero h1 .highlight {
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      font-size: 1.15rem;
-      color: var(--text-secondary);
-      max-width: 640px;
-      margin: 0 auto 2.5rem;
-      position: relative;
-    }
-
-    .hero-meta {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      position: relative;
-    }
-
-    .hero-meta span {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    /* Container */
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 2rem;
-    }
-
-    /* Article content */
-    .article {
-      padding: 3rem 0 6rem;
-    }
-
-    .article h2 {
-      font-size: 1.65rem;
-      font-weight: 700;
-      margin: 3rem 0 1rem;
-      padding-top: 1.5rem;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .article h2 .num {
-      font-size: 1rem;
-      font-weight: 700;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      flex-shrink: 0;
-    }
-
-    .article p {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .article ul, .article ol {
-      color: var(--text-secondary);
-      font-size: 1.05rem;
-      margin-bottom: 1.25rem;
-      padding-left: 1.5rem;
-    }
-
-    .article li {
-      margin-bottom: 0.5rem;
-    }
-
-    .article li strong {
-      color: var(--text);
-    }
-
-    /* Callout */
-    .callout {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 2rem 0;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .callout.tip {
-      border-left: 4px solid var(--accent);
-    }
-
-    .callout.info {
-      border-left: 4px solid var(--primary);
-    }
-
-    .callout.success {
-      border-left: 4px solid var(--success);
-    }
-
-    .callout-title {
-      font-weight: 700;
-      font-size: 0.95rem;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .callout p {
-      font-size: 0.95rem;
-      margin-bottom: 0;
-    }
-
-    /* Code block */
-    .code-block {
-      background: var(--code-bg);
-      border-radius: 12px;
-      overflow: hidden;
-      margin: 1.5rem 0;
-      box-shadow: var(--shadow-md);
-    }
-
-    .code-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1.25rem;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .code-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .code-dots span {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-
-    .code-dots span:nth-child(1) { background: #FF5F57; }
-    .code-dots span:nth-child(2) { background: #FEBC2E; }
-    .code-dots span:nth-child(3) { background: #28C840; }
-
-    .code-lang {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.4);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .code-block pre {
-      padding: 1.25rem;
-      overflow-x: auto;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      line-height: 1.7;
-      color: var(--code-text);
-    }
-
-    .code-block pre .comment { color: #6C7086; }
-    .code-block pre .keyword { color: #CBA6F7; }
-    .code-block pre .string { color: #A6E3A1; }
-    .code-block pre .function { color: #89B4FA; }
-    .code-block pre .tag { color: #F38BA8; }
-    .code-block pre .attr { color: #FAB387; }
-
-    /* Feature cards */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin: 2rem 0;
-    }
-
-    .feature-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.75rem;
-      transition: all 0.3s ease;
-    }
-
-    .feature-card:hover {
-      border-color: var(--primary-light);
-      box-shadow: var(--shadow-glow);
-      transform: translateY(-2px);
-    }
-
-    .feature-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-    }
-
-    .feature-card:nth-child(1) .feature-icon { background: rgba(108,63,224,0.1); }
-    .feature-card:nth-child(2) .feature-icon { background: rgba(245,158,11,0.1); }
-    .feature-card:nth-child(3) .feature-icon { background: rgba(16,185,129,0.1); }
-    .feature-card:nth-child(4) .feature-icon { background: rgba(239,68,68,0.1); }
-
-    .feature-card h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-card p {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 0;
-    }
-
-    /* Comparison table */
-    .comparison {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      margin: 2rem 0;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .comparison table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .comparison th {
-      background: rgba(108,63,224,0.06);
-      padding: 1rem 1.25rem;
-      text-align: left;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text);
-    }
-
-    .comparison td {
-      padding: 0.85rem 1.25rem;
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      border-top: 1px solid var(--border);
-    }
-
-    .comparison tr:hover td {
-      background: rgba(108,63,224,0.02);
-    }
-
-    .comparison .check { color: var(--success); font-weight: 600; }
-    .comparison .cross { color: #EF4444; }
-
-    /* Steps */
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-
-    .step {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      transition: all 0.2s;
-    }
-
-    .step:hover {
-      border-color: var(--primary-light);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: var(--gradient-1);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.85rem;
-      flex-shrink: 0;
-    }
-
-    .step-content h3 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
-
-    .step-content p {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 0;
-    }
-
-    /* CTA */
-    .cta {
-      background: var(--gradient-1);
-      border-radius: 20px;
-      padding: 3rem 2.5rem;
-      text-align: center;
-      margin: 4rem 0 0;
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cta::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -30%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-
-    .cta h2 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      margin-bottom: 0.75rem;
-      position: relative;
-    }
-
-    .cta p {
-      font-size: 1.05rem;
-      opacity: 0.9;
-      max-width: 500px;
-      margin: 0 auto 2rem;
-      position: relative;
-    }
-
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: white;
-      color: var(--primary);
-      padding: 0.85rem 2rem;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      text-decoration: none;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .cta-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    }
-
-    /* Footer */
-    .footer {
-      text-align: center;
-      padding: 3rem 2rem;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      border-top: 1px solid var(--border);
-      margin-top: 4rem;
-    }
-
-    .footer a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-
-    /* Inline code */
-    .article code:not(pre code) {
-      background: rgba(108,63,224,0.08);
-      color: var(--primary);
-      padding: 0.15rem 0.45rem;
-      border-radius: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85em;
-    }
-
-    /* Separator */
-    .sep {
-      border: none;
-      height: 1px;
-      background: var(--border);
-      margin: 3rem 0;
-    }
-
-    /* TOC */
-    .toc {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.5rem 2rem;
-      margin-bottom: 3rem;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .toc h3 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 1rem;
-    }
-
-    .toc ol {
-      padding-left: 1.25rem;
-      margin: 0;
-    }
-
-    .toc li {
-      margin-bottom: 0.4rem;
-    }
-
-    .toc a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .toc a:hover { color: var(--primary); }
-
-    /* Responsive */
-    @media (max-width: 640px) {
-      .nav { padding: 0 1rem; }
-      .nav-links { display: none; }
-      .hero { padding: 8rem 1.5rem 3rem; }
-      .container { padding: 0 1.25rem; }
-      .features { grid-template-columns: 1fr; }
-      .cta { padding: 2rem 1.5rem; }
-      .cta h2 { font-size: 1.4rem; }
-    }
-
-    /* Reading progress */
-    .progress-bar {
-      position: fixed;
-      top: 64px;
-      left: 0;
-      height: 3px;
-      background: var(--gradient-1);
-      z-index: 99;
-      transition: width 0.1s;
-      width: 0%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bagaimana OpenClaw, AI asisten self-hosted, bisa menjadi partner andalan untuk pengembangan web dan penulisan copy yang efektif.">
+    <meta name="author" content="Victor Fendi">
+    <title>Memanfaatkan OpenClaw sebagai Asisten Pengembang Web dan Copywriter | Victor Fendi</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/article.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">VF.</a>
+            <ul class="nav-links">
+                <li><a href="../index.html#about"><i data-lucide="user" class="nav-icon"></i> About</a></li>
+                <li><a href="../index.html#skills"><i data-lucide="wrench" class="nav-icon"></i> Skills</a></li>
+                <li><a href="../index.html#projects"><i data-lucide="folder-open" class="nav-icon"></i> Projects</a></li>
+                <li><a href="../blog.html" class="active"><i data-lucide="pen-line" class="nav-icon"></i> Blog</a></li>
+                <li><a href="../index.html#contact"><i data-lucide="mail" class="nav-icon"></i> Contact</a></li>
+            </ul>
+        </div>
+    </nav>
 
-  <!-- Progress bar -->
-  <div class="progress-bar" id="progressBar"></div>
+    <!-- Article -->
+    <article class="article">
+        <header class="article-header">
+            <div class="container">
+                <div class="article-meta">
+                    <span class="article-date">May 11, 2026</span>
+                    <span class="article-category">AI / Productivity</span>
+                    <span class="article-read-time">8 min read</span>
+                </div>
+                <h1 class="article-title">Memanfaatkan OpenClaw sebagai Asisten Pengembang Web dan Copywriter</h1>
+                <p class="article-subtitle">Bagaimana AI asisten self-hosted bisa mengubah cara kamu membangun website, menulis copy, dan meningkatkan produktivitas — semuanya dari terminal favoritmu.</p>
+                <div class="article-tags">
+                    <span>OpenClaw</span>
+                    <span>AI Assistant</span>
+                    <span>Web Development</span>
+                    <span>Copywriting</span>
+                </div>
+            </div>
+        </header>
 
-  <!-- Navigation -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="#" class="nav-logo"><span>🦞</span> OpenClaw</a>
-      <ul class="nav-links">
-        <li><a href="#apa-itu">Pengenalan</a></li>
-        <li><a href="#web-dev">Web Dev</a></li>
-        <li><a href="#copywriter">Copywriter</a></li>
-        <li><a href="#langsung">Coba Langsung</a></li>
-      </ul>
-    </div>
-  </nav>
+        <div class="article-content">
+            <div class="container">
+                <div class="content">
+                    <p class="lead">AI bukan lagi sekadar chatbot yang menjawab pertanyaan. Dengan tool yang tepat, AI bisa menjadi partner coding dan copywriting yang secara dramatis meningkatkan produktivitas. Dan <strong>OpenClaw</strong> adalah tool itu — asisten self-hosted yang berjalan di perangkatmu sendiri.</p>
 
-  <!-- Hero -->
-  <header class="hero">
-    <div class="hero-badge">🚀 AI-Powered Productivity</div>
-    <h1>Memanfaatkan <span class="highlight">OpenClaw</span> sebagai Asisten Pengembang Web dan Copywriter</h1>
-    <p>Bagaimana AI asisten self-hosted bisa mengubah cara kamu membangun website, menulis copy, dan meningkatkan produktivitas — semuanya dari terminal favoritmu.</p>
-    <div class="hero-meta">
-      <span>📅 11 Mei 2026</span>
-      <span>⏱️ 8 menit baca</span>
-      <span>📂 Tutorial & Best Practices</span>
-    </div>
-  </header>
+                    <h2 id="apa-itu-openclaw">Apa Itu OpenClaw?</h2>
+                    <p><strong>OpenClaw</strong> adalah AI asisten personal yang bisa dijalankan di perangkat milikmu sendiri (self-hosted). Dengan satu Gateway yang terhubung ke berbagai platform — WhatsApp, Telegram, Discord, Signal, Slack, WebChat, dan banyak lagi — kamu mendapatkan asisten AI yang selalu siap melayani tanpa harus bergantung pada layanan pihak ketiga.</p>
 
-  <!-- Article -->
-  <article class="container article">
+                    <p>OpenClaw bersifat <strong>open-source</strong> (lisensi MIT), didesain khusus untuk developer dan power user yang ingin kontrol penuh atas data dan asisten mereka. Tidak perlu server cloud mahal — cukup Node.js, API key dari provider AI pilihanmu, dan beberapa menit setup.</p>
 
-    <!-- Table of Contents -->
-    <div class="toc">
-      <h3>Daftar Isi</h3>
-      <ol>
-        <li><a href="#apa-itu">Apa Itu OpenClaw?</a></li>
-        <li><a href="#kenapa">Kenapa OpenClaw untuk Web Dev & Copywriting?</a></li>
-        <li><a href="#web-dev">OpenClaw sebagai Asisten Pengembang Web</a></li>
-        <li><a href="#copywriter">OpenClaw sebagai Copywriter</a></li>
-        <li><a href="#workflow">Workflow Terpadu: Dari Konsep ke Deploy</a></li>
-        <li><a href="#tips">Tips & Best Practices</a></li>
-        <li><a href="#kesimpulan">Kesimpulan</a></li>
-      </ol>
-    </div>
+                    <blockquote>
+                        <p>OpenClaw mendukung berbagai model AI seperti OpenAI, Anthropic, Google, dan provider lokal lainnya. Kamu bebas memilih model yang paling cocok dengan kebutuhan dan budget-mu.</p>
+                    </blockquote>
 
-    <!-- Section 1 -->
-    <h2 id="apa-itu"><span class="num">01</span> Apa Itu OpenClaw?</h2>
-    <p>
-      <strong>OpenClaw</strong> adalah AI asisten personal yang bisa dijalankan di perangkat milikmu sendiri (self-hosted). Dengan satu Gateway yang terhubung ke berbagai platform — WhatsApp, Telegram, Discord, Signal, Slack, WebChat, dan banyak lagi — kamu mendapatkan asisten AI yang selalu siap melayani tanpa harus bergantung pada layanan pihak ketiga.
-    </p>
-    <p>
-      OpenClaw bersifat open-source (lisensi MIT), didesain khusus untuk developer dan power user yang ingin kontrol penuh atas data dan asisten mereka. Tidak perlu server cloud mahal — cukup Node.js, API key dari provider AI pilihanmu, dan beberapa menit setup.
-    </p>
+                    <h2 id="kenapa-openclaw">Kenapa OpenClaw untuk Web Dev & Copywriting?</h2>
+                    <p>Dua dunia yang biasanya terpisah — coding dan menulis — kini bisa ditangani oleh satu asisten. Berikut alasan kenapa OpenClaw cocok untuk kedua peran ini:</p>
 
-    <div class="callout info">
-      <div class="callout-title">💡 Info Singkat</div>
-      <p>OpenClaw mendukung berbagai model AI seperti OpenAI, Anthropic, Google, dan provider lokal lainnya. Kamu bebas memilih model yang paling cocok dengan kebutuhan dan budget-mu.</p>
-    </div>
+                    <ul>
+                        <li><strong>Tool Use Langsung</strong> — OpenClaw bisa menjalankan perintah shell, membaca/menulis file, dan mengelola proyek langsung dari workspace-mu.</li>
+                        <li><strong>Memory Persistence</strong> — Asisten menyimpan konteks dalam file memori, jadi setiap sesi bisa melanjutkan pekerjaan tanpa kehilangan konteks.</li>
+                        <li><strong>Multi-Channel</strong> — Akses asisten dari mana saja: Telegram saat mobile, WebChat saat di desktop, atau Discord saat kolaborasi tim.</li>
+                        <li><strong>Self-Hosted & Aman</strong> — Data tetap di perangkatmu. Tidak ada data yang dikirim ke server pihak ketiga selain ke provider AI yang kamu pilih.</li>
+                    </ul>
 
-    <!-- Section 2 -->
-    <h2 id="kenapa"><span class="num">02</span> Kenapa OpenClaw untuk Web Dev & Copywriting?</h2>
-    <p>Dua dunia yang biasanya terpisah — coding dan menulis — kini bisa ditangani oleh satu asisten. Berikut alasan kenapa OpenClaw cocok untuk kedua peran ini:</p>
+                    <h2 id="asisten-pengembang-web">OpenClaw sebagai Asisten Pengembang Web</h2>
+                    <p>OpenClaw bukan sekadar chatbot. Dengan kemampuan <em>tool use</em>, dia bisa menjadi partner coding yang sesungguhnya — mulai dari scaffolding proyek, menulis kode, debug, sampai deployment.</p>
 
-    <div class="features">
-      <div class="feature-card">
-        <div class="feature-icon">🔧</div>
-        <h3>Tool Use Langsung</h3>
-        <p>OpenClaw bisa menjalankan perintah shell, membaca/menulis file, dan mengelola proyek langsung dari workspace-mu.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🧠</div>
-        <h3>Memory Persistence</h3>
-        <p>Asisten menyimpan konteks dalam file memori — jadi setiap sesi bisa melanjutkan pekerjaan tanpa kehilangan konteks sebelumnya.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>Multi-Channel</h3>
-        <p>Akses asisten dari mana saja — Telegram saat mobile, WebChat saat di desktop, atau Discord saat kolaborasi tim.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>Self-Hosted & Aman</h3>
-        <p>Data tetap di perangkatmu. Tidak ada data yang dikirim ke server pihak ketiga selain ke provider AI yang kamu pilih.</p>
-      </div>
-    </div>
+                    <h3>Apa yang bisa dilakukan?</h3>
+                    <ul>
+                        <li><strong>Generate halaman web lengkap</strong> — beri instruksi desain dan konten, OpenClaw membuat HTML/CSS/JS siap pakai</li>
+                        <li><strong>Refaktor & optimasi kode</strong> — minta dia review kode dan berikan saran perbaikan</li>
+                        <li><strong>Debug error</strong> — paste error log, OpenClaw bisa mendiagnosis dan memberi solusi</li>
+                        <li><strong>Setup proyek</strong> — buat boilerplate React, Vue, Tailwind, atau framework apapun</li>
+                        <li><strong>Git workflow</strong> — commit, push, create PR langsung dari chat</li>
+                        <li><strong>Responsive design check</strong> — minta dia pastikan layout mobile-friendly</li>
+                    </ul>
 
-    <!-- Section 3 -->
-    <h2 id="web-dev"><span class="num">03</span> OpenClaw sebagai Asisten Pengembang Web</h2>
-    <p>
-      OpenClaw bukan sekadar chatbot. Dengan kemampuan <em>tool use</em>, dia bisa menjadi partner coding yang sesungguhnya — mulai dari scaffolding proyek, menulis kode, debug, sampai deployment.
-    </p>
+                    <pre><code># Contoh: Minta OpenClaw bikin landing page
 
-    <h3 style="font-size:1.1rem; font-weight:600; margin: 1.5rem 0 0.75rem;">Apa yang bisa dilakukan?</h3>
-    <ul>
-      <li><strong>Generate halaman web lengkap</strong> — beri instruksi desain dan konten, OpenClaw membuat HTML/CSS/JS siap pakai</li>
-      <li><strong>Refaktor & optimasi kode</strong> — minta dia review kode dan berikan saran perbaikan</li>
-      <li><strong>Debug error</strong> — paste error log, OpenClaw bisa mendiagnosis dan memberi solusi</li>
-      <li><strong>Setup proyek</strong> — buat boilerplate React, Vue, Tailwind, atau framework apapun</li>
-      <li><strong>Git workflow</strong> — commit, push, create PR langsung dari chat</li>
-      <li><strong>Responsive design check</strong> — minta dia pastikan layout mobile-friendly</li>
-    </ul>
-
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <span class="code-lang">Contoh Prompt</span>
-      </div>
-      <pre><span class="comment"># Contoh: Minta OpenClaw bikin landing page</span>
-
-<span class="string">"Buatkan landing page untuk coffee shop dengan desain modern.
+"Buatkan landing page untuk coffee shop dengan desain modern.
 Fitur: hero section, menu makanan, testimonial, dan CTA.
 Pakai Tailwind CSS, warna earth tone, dan font Inter.
-Simpan sebagai index.html di folder project."</span>
+Simpan sebagai index.html di folder project."
 
-<span class="comment"># OpenClaw akan:</span>
-<span class="comment"># 1. Membuat file index.html</span>
-<span class="comment"># 2. Menulis HTML + CSS lengkap</span>
-<span class="comment"># 3. Pastikan responsive & well-structured</span></pre>
-    </div>
+# OpenClaw akan:
+# 1. Membuat file index.html
+# 2. Menulis HTML + CSS lengkap
+# 3. Pastikan responsive & well-structured</code></pre>
 
-    <div class="callout tip">
-      <div class="callout-title">💡 Pro Tip</div>
-      <p>Berikan referensi desain yang spesifik — warna, font, layout, atau link website yang kamu suka. Semakin detail instruksi, semakin akurat hasilnya.</p>
-    </div>
+                    <blockquote>
+                        <p><strong>Pro Tip:</strong> Berikan referensi desain yang spesifik — warna, font, layout, atau link website yang kamu suka. Semakin detail instruksi, semakin akurat hasilnya.</p>
+                    </blockquote>
 
-    <!-- Section 4 -->
-    <h2 id="copywriter"><span class="num">04</span> OpenClaw sebagai Copywriter</h2>
-    <p>
-      Aspek copywriting sering terabaikan oleh developer. Padahal, website yang bagus tanpa copy yang menarik ibarat mobil sport tanpa mesin. OpenClaw bisa mengisi celah ini dengan menulis copy yang persuasif dan relevan.
-    </p>
+                    <h2 id="asisten-copywriter">OpenClaw sebagai Copywriter</h2>
+                    <p>Aspek copywriting sering terabaikan oleh developer. Padahal, website yang bagus tanpa copy yang menarik ibarat mobil sport tanpa mesin. OpenClaw bisa mengisi celah ini dengan menulis copy yang persuasif dan relevan.</p>
 
-    <h3 style="font-size:1.1rem; font-weight:600; margin: 1.5rem 0 0.75rem;">Jenis Copy yang Bisa Ditangani</h3>
+                    <h3>Jenis Copy yang Bisa Ditangani</h3>
+                    <ul>
+                        <li><strong>Headline & Subhead</strong> — Landing page hero, blog title. Keunggulan: A/B testing cepat.</li>
+                        <li><strong>Product Description</strong> — Halaman produk, katalog. Keunggulan: SEO-friendly.</li>
+                        <li><strong>CTA Buttons</strong> — Tombol aksi, form submit. Keunggulan: Action-oriented.</li>
+                        <li><strong>Email Marketing</strong> — Newsletter, onboarding email. Keunggulan: Personalized tone.</li>
+                        <li><strong>Blog Content</strong> — Artikel SEO, tutorial. Keunggulan: Struktur & keyword.</li>
+                        <li><strong>Social Media Copy</strong> — Instagram caption, tweet. Keunggulan: Platform-aware.</li>
+                    </ul>
 
-    <table class="comparison">
-      <thead>
-        <tr>
-          <th>Jenis Copy</th>
-          <th>Contoh Penggunaan</th>
-          <th>Keunggulan</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Headline & Subhead</strong></td>
-          <td>Landing page hero, blog title</td>
-          <td class="check"> ✓ A/B testing cepat</td>
-        </tr>
-        <tr>
-          <td><strong>Product Description</strong></td>
-          <td>Halaman produk, katalog</td>
-          <td class="check"> ✓ SEO-friendly</td>
-        </tr>
-        <tr>
-          <td><strong>CTA Buttons</strong></td>
-          <td>Tombol aksi, form submit</td>
-          <td class="check"> ✓ Action-oriented</td>
-        </tr>
-        <tr>
-          <td><strong>Email Marketing</strong></td>
-          <td>Newsletter, onboarding email</td>
-          <td class="check"> ✓ Personalized tone</td>
-        </tr>
-        <tr>
-          <td><strong>Blog Content</strong></td>
-          <td>Artikel SEO, tutorial</td>
-          <td class="check"> ✓ Struktur & keyword</td>
-        </tr>
-        <tr>
-          <td><strong>Social Media Copy</strong></td>
-          <td>Instagram caption, tweet</td>
-          <td class="check"> ✓ Platform-aware</td>
-        </tr>
-      </tbody>
-    </table>
+                    <pre><code># Contoh: Minta OpenClaw tulis copy untuk SaaS
 
-    <div class="code-block">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <span class="code-lang">Contoh Prompt</span>
-      </div>
-      <pre><span class="comment"># Contoh: Minta OpenClaw tulis copy untuk SaaS</span>
-
-<span class="string">"Tulis copy untuk landing page SaaS project management tool.
+"Tulis copy untuk landing page SaaS project management tool.
 Target: startup kecil-menengah, 10-50 karyawan.
 Tone: profesional tapi friendly.
-Butuh: headline, subheadline, 3 fitur highlight, 
+Butuh: headline, subheadline, 3 fitur highlight,
 social proof section, dan CTA.
-Bahasa: Indonesia."</span></pre>
-    </div>
+Bahasa: Indonesia."</code></pre>
 
-    <div class="callout success">
-      <div class="callout-title">✅ Keunggulan Utama</div>
-      <p>Karena OpenClaw menyimpan konteks dalam file memori, dia bisa "mengenal" brand voice, preferensi gaya tulis, dan sejarah project-mu — menghasilkan copy yang makin konsisten dari waktu ke waktu.</p>
-    </div>
+                    <blockquote>
+                        <p><strong>Keunggulan Utama:</strong> Karena OpenClaw menyimpan konteks dalam file memori, dia bisa "mengenal" brand voice, preferensi gaya tulis, dan sejarah project-mu — menghasilkan copy yang makin konsisten dari waktu ke waktu.</p>
+                    </blockquote>
 
-    <!-- Section 5 -->
-    <h2 id="workflow"><span class="num">05</span> Workflow Terpadu: Dari Konsep ke Deploy</h2>
-    <p>Keajaiban sesungguhnya terjadi ketika kamu menggabungkan kedua kemampuan ini dalam satu workflow yang mulus:</p>
+                    <h2 id="workflow-terpadu">Workflow Terpadu: Dari Konsep ke Deploy</h2>
+                    <p>Keajaiban sesungguhnya terjadi ketika kamu menggabungkan kedua kemampuan ini dalam satu workflow yang mulus:</p>
 
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <h3>Brainstorm & Brief</h3>
-          <p>Diskusi konsep, target audiens, dan tujuan website. OpenClaw bantu riset kompetitor dan struktur konten.</p>
+                    <ol>
+                        <li><strong>Brainstorm & Brief</strong> — Diskusi konsep, target audiens, dan tujuan website. OpenClaw bantu riset kompetitor dan struktur konten.</li>
+                        <li><strong>Copywriting</strong> — Tulis semua copy — headline, body copy, CTA, meta description — dalam satu sesi chat yang kontekstual.</li>
+                        <li><strong>Design & Development</strong> — Implementasi desain dan copy ke dalam kode. OpenClaw bisa langsung menulis dan menyimpan file proyek.</li>
+                        <li><strong>Review & Iterasi</strong> — Minta review, lakukan perubahan, dan iterasi sampai puas — semua dalam satu percakapan berkesinambungan.</li>
+                        <li><strong>Deploy</strong> — OpenClaw bisa bantu deploy ke Vercel, Netlify, atau server custom — langsung dari terminal.</li>
+                    </ol>
+
+                    <h2 id="tips-best-practices">Tips & Best Practices</h2>
+                    <ol>
+                        <li><strong>Jelaskan konteks</strong> — Selalu beritahu brand, target audiens, dan tone yang diinginkan di awal sesi.</li>
+                        <li><strong>Pakai file SOUL.md</strong> — Custom personality dan gaya komunikasi asisten sesuai kebutuhan project.</li>
+                        <li><strong>Iteratif, bukan sekali jadi</strong> — Minta draft dulu, lalu refine bertahap. Lebih efisien daripada minta sempurna di awal.</li>
+                        <li><strong>Manfaatkan memory system</strong> — Biarkan OpenClaw menyimpan preferensi project di file memori untuk konsistensi jangka panjang.</li>
+                        <li><strong>Review selalu</strong> — AI hebat, tapi kamu yang tahu bisnismu. Selalu review output sebelum publish.</li>
+                        <li><strong>Combine tools</strong> — Gunakan web search untuk riset, file system untuk manajemen proyek, dan messaging untuk komunikasi — semua dari satu interface.</li>
+                    </ol>
+
+                    <blockquote>
+                        <p><strong>Tips Tambahan:</strong> Untuk project besar, manfaatkan fitur <em>multi-agent</em> OpenClaw — satu agent fokus di development, satu lagi di copywriting, lalu koordinasi lewat session terpisah.</p>
+                    </blockquote>
+
+                    <h2 id="kesimpulan">Kesimpulan</h2>
+                    <p>OpenClaw bukan sekadar chatbot AI biasa. Dengan kemampuan tool use, memory persistence, dan multi-channel access, dia adalah partner pengembangan web dan copywriting yang bisa secara dramatis meningkatkan produktivitas — tanpa mengorbankan kontrol atas data dan workflow-mu.</p>
+
+                    <p>Yang kamu butuhkan hanyalah: Node.js, API key dari provider AI favoritmu, dan kreativitas. Dalam hitungan menit, kamu punya asisten yang bisa coding, menulis, riset, dan berkomunikasi — semuanya dari perangkatmu sendiri.</p>
+
+                    <p class="article-ending"><strong>TL;DR:</strong> OpenClaw self-hosted, punya tool use & memory persistence, multi-channel, dan open-source. Mulai dari terminal, selesaikan dengan website yang siap launch. <a href="https://docs.openclaw.ai/start/getting-started" target="_blank" rel="noopener">Coba sekarang →</a></p>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <h3>Copywriting</h3>
-          <p>Tulis semua copy — headline, body copy, CTA, meta description — dalam satu sesi chat yang kontekstual.</p>
+
+        <footer class="article-footer">
+            <div class="container">
+                <div class="author-bio">
+                    <div class="author-info">
+                        <h4>Victor Fendi</h4>
+                        <p>Software Engineer based in Kudus, Indonesia. Building clean, efficient, and scalable solutions.</p>
+                    </div>
+                    <div class="author-links">
+                        <a href="../index.html#contact">Contact</a>
+                        <a href="https://github.com/fendivictor" target="_blank" rel="noopener">GitHub</a>
+                        <a href="https://linkedin.com/in/fendivictor" target="_blank" rel="noopener">LinkedIn</a>
+                    </div>
+                </div>
+
+                <div class="article-navigation">
+                    <a href="../blog.html" class="btn btn-secondary">← Back to Blog</a>
+                    <a href="../index.html#contact" class="btn btn-primary">Get In Touch →</a>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+                <div class="footer-socials">
+                    <a href="https://github.com/fendivictor" target="_blank" rel="noopener" aria-label="GitHub"><i class="devicon-github-original"></i></a>
+                    <a href="https://www.linkedin.com/in/victor-noor-fendi-8559a9112/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="devicon-linkedin-plain"></i></a>
+                    <a href="https://twitter.com/fendivn" target="_blank" rel="noopener" aria-label="Twitter"><i data-lucide="twitter" class="footer-icon"></i></a>
+                </div>
+            </div>
         </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <h3>Design & Development</h3>
-          <p>Implementasi desain dan copy ke dalam kode. OpenClaw bisa langsung menulis dan menyimpan file proyek.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-content">
-          <h3>Review & Iterasi</h3>
-          <p>Minta review, lakukan perubahan, dan iterasi sampai puas — semua dalam satu percakapan berkesinambungan.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <h3>Deploy</h3>
-          <p>OpenClaw bisa bantu deploy ke Vercel, Netlify, atau server custom — langsung dari terminal.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 6 -->
-    <h2 id="tips"><span class="num">06</span> Tips & Best Practices</h2>
-
-    <ol>
-      <li><strong>Jelaskan konteks</strong> — Selalu beritahu brand, target audiens, dan tone yang diinginkan di awal sesi.</li>
-      <li><strong>Pakai file SOUL.md</strong> — Custom personality dan gaya komunikasi asisten sesuai kebutuhan project.</li>
-      <li><strong>Iteratif, bukan sekali jadi</strong> — Minta draft dulu, lalu refine bertahap. Lebih efisien daripada minta sempurna di awal.</li>
-      <li><strong>Manfaatkan memory system</strong> — Biarkan OpenClaw menyimpan preferensi project di file memori untuk konsistensi jangka panjang.</li>
-      <li><strong>Review selalu</strong> — AI hebat, tapi kamu yang tahu bisnismu. Selalu review output sebelum publish.</li>
-      <li><strong>Combine tools</strong> — Gunakan web search untuk riset, file system untuk manajemen proyek, dan messaging untuk komunikasi — semua dari satu interface.</li>
-    </ol>
-
-    <div class="callout tip">
-      <div class="callout-title">💡 Tips Tambahan</div>
-      <p>Untuk project besar, manfaatkan fitur <em>multi-agent</em> OpenClaw — satu agent fokus di development, satu lagi di copywriting, lalu koordinasi lewat session terpisah.</p>
-    </div>
-
-    <!-- Section 7 -->
-    <h2 id="kesimpulan"><span class="num">07</span> Kesimpulan</h2>
-    <p>
-      OpenClaw bukan sekadar chatbot AI biasa. Dengan kemampuan tool use, memory persistence, dan multi-channel access, dia adalah partner pengembangan web dan copywriting yang bisa secara dramatis meningkatkan produktivitas — tanpa mengorbankan kontrol atas data dan workflow-mu.
-    </p>
-    <p>
-      Yang kamu butuhkan hanyalah: Node.js, API key dari provider AI favoritmu, dan kreativitas. Dalam hitungan menit, kamu punya asisten yang bisa coding, menulis, riset, dan berkomunikasi — semuanya dari perangkatmu sendiri.
-    </p>
-    <p>
-      <strong>Mulai dari terminal. Selesaikan dengan website yang siap launch. 🚀</strong>
-    </p>
-
-    <hr class="sep">
-
-    <!-- CTA -->
-    <div class="cta">
-      <h2>Siap Mencoba OpenClaw?</h2>
-      <p>Install dalam 5 menit dan rasakan sendiri bagaimana AI asisten self-hosted bisa mengubah workflow-mu.</p>
-      <a href="https://docs.openclaw.ai/start/getting-started" target="_blank" class="cta-btn">
-        🦞 Mulai Sekarang →
-      </a>
-    </div>
-
-  </article>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>Dibuat dengan ❤️ menggunakan <a href="https://openclaw.ai" target="_blank">OpenClaw</a> — Your own personal AI assistant 🦞</p>
-  </footer>
-
-  <script>
-    // Reading progress bar
-    window.addEventListener('scroll', () => {
-      const scrollTop = document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (scrollTop / scrollHeight) * 100;
-      document.getElementById('progressBar').style.width = progress + '%';
-    });
-
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-  </script>
-
+    </footer>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
