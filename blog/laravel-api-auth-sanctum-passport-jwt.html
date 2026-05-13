@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Perbandingan mendalam Sanctum, Passport, dan JWT untuk API authentication di Laravel — mana yang sebenarnya cocok untuk project-mu?">
+    <meta name="author" content="Victor Fendi">
+    <title>API Authentication di Laravel: Sanctum, Passport, atau JWT? | Victor Fendi</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/article.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="logo">VF.</a>
+            <ul class="nav-links">
+                <li><a href="../index.html#about"><i data-lucide="user" class="nav-icon"></i> About</a></li>
+                <li><a href="../index.html#skills"><i data-lucide="wrench" class="nav-icon"></i> Skills</a></li>
+                <li><a href="../index.html#projects"><i data-lucide="folder-open" class="nav-icon"></i> Projects</a></li>
+                <li><a href="../blog.html" class="active"><i data-lucide="pen-line" class="nav-icon"></i> Blog</a></li>
+                <li><a href="../index.html#contact"><i data-lucide="mail" class="nav-icon"></i> Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Article -->
+    <article class="article">
+        <header class="article-header">
+            <div class="container">
+                <div class="article-meta">
+                    <span class="article-date">May 13, 2026</span>
+                    <span class="article-category">Laravel / Security</span>
+                    <span class="article-read-time">10 min read</span>
+                </div>
+                <h1 class="article-title">API Authentication di Laravel: Sanctum, Passport, atau JWT?</h1>
+                <p class="article-subtitle">Setiap project Laravel yang butuh API punya pertanyaan yang sama — pakai apa untuk authentication? Ini jawabannya, berdasarkan pengalaman production, bukan dokumentasi teoritis.</p>
+                <div class="article-tags">
+                    <span>Laravel</span>
+                    <span>API</span>
+                    <span>Sanctum</span>
+                    <span>Authentication</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="article-content">
+            <div class="container">
+                <div class="content">
+                    <p class="lead">Pertanyaan paling sering muncul di forum Laravel, Discord, dan obrolan developer: <em>"Gue mau bikin API, pakai Sanctum, Passport, atau JWT?"</em> Jawaban default kebanyakan orang: <strong>"Sanctum."</strong> Tapi jawaban yang benar adalah: <strong>"Tergantung."</strong></p>
+
+                    <h2 id="masalahnya-bukan-yang-mana-lebih-bagus">Masalahnya Bukan "Yang Mana Lebih Bagus"</h2>
+                    <p>Ketiga opsi ini punya use case masing-masing. Masalahnya, kebanyakan developer memilih berdasarkan hype thread di Twitter atau rekomendasi chat GPT, bukan berdasarkan kebutuhan project mereka. Akibatnya? Over-engineering di satu sisi, under-engineering di sisi lain.</p>
+
+                    <p>Mari kita bedah satu per satu — tanpa bias, dengan perspektif orang yang sudah pakai ketiganya di production.</p>
+
+                    <h2 id="laravel-sanctum">Laravel Sanctum</h2>
+                    <p><strong>Sanctum</strong> adalah paket authentication bawaan Laravel yang menangani dua skenario berbeda:</p>
+
+                    <h3>1. SPA Authentication (Cookie-based)</h3>
+                    <p>Kamu punya frontend (React, Vue, Inertia) yang hidup di domain yang sama dengan backend Laravel. Sanctum menangani authentication lewat cookie — sederhana, aman, tanpa ribet token management.</p>
+
+                    <pre><code>// routes/api.php
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+// Login dari SPA
+await axios.post('/login', { email, password });
+// Cookie otomatis diset — selesai.</code></pre>
+
+                    <h3>2. API Token Authentication</h3>
+                    <p>Untuk API yang dipanggil dari client pihak ketiga — mobile app, atau integrasi eksternal. Setiap user bisa punya multiple token dengan scope tertentu.</p>
+
+                    <pre><code>// Membuat token untuk user
+$token = $user->createToken('mobile-app', ['read', 'write']);
+
+// Menggunakan token
+$response = Http::withToken($token->plainTextToken)
+    ->get('https://api.example.com/me');</code></pre>
+
+                    <blockquote>
+                        <p><strong>Kapan pakai Sanctum?</strong> SPA dengan Laravel backend, simple API untuk mobile app, atau microservice yang butuh authentication cepat tanpa setup rumit.</p>
+                    </blockquote>
+
+                    <h3>Kelebihan Sanctum</h3>
+                    <ul>
+                        <li><strong>Setup minimalis</strong> — <code>composer require laravel/sanctum</code>, migrate, selesai</li>
+                        <li><strong>Bawaan Laravel</strong> — maintained by Laravel team, selalu kompatibel dengan versi terbaru</li>
+                        <li><strong>Cookie-based SPA auth</strong> — paling aman untuk same-origin frontend</li>
+                        <li><strong>Token management</strong> — revoke, scope, dan expiration built-in</li>
+                        <li><strong>Database optional</strong> — bisa pakai file-based token untuk simple API</li>
+                    </ul>
+
+                    <h3>Kekurangan Sanctum</h3>
+                    <ul>
+                        <li><strong>Bukan OAuth2</strong> — tidak support authorization flow penuh (seperti "Login with Google")</li>
+                        <li><strong>Token stored di database</strong> — setiap request hit database untuk validasi token</li>
+                        <li><strong>Tidak stateless</strong> — untuk SPA auth, tetap perlu session/database</li>
+                        <li><strong>Scope system terbatas</strong> — tidak se-flexible Passport</li>
+                    </ul>
+
+                    <h2 id="laravel-passport">Laravel Passport</h2>
+                    <p><strong>Passport</strong> adalah implementasi penuh <strong>OAuth2 server</strong> untuk Laravel. Kalau kamu butuh fitur OAuth2 yang lengkap — authorization codes, client credentials, implicit grants, refresh tokens — ini tool-nya.</p>
+
+                    <pre><code>// Authorization Code Grant (full OAuth2 flow)
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
+// Passport menyediakan endpoint OAuth2 lengkap:
+// /oauth/authorize
+// /oauth/token
+// /oauth/tokens
+// /oauth/clients
+// /oauth/personal-access-tokens</code></pre>
+
+                    <blockquote>
+                        <p><strong>Kapan pakai Passport?</strong> Kalau kamu benar-benar butuh OAuth2 — misalnya, membangun API publik yang memungkinkan developer pihak ketiga membuat aplikasi di atas platform-mu. Contoh nyata: Laravel Forge, Laravel Vapor.</p>
+                    </blockquote>
+
+                    <h3>Kelebihan Passport</h3>
+                    <ul>
+                        <li><strong>OAuth2 compliant</strong> — implementasi standar lengkap</li>
+                        <li><strong>Authorization Code Grant</strong> — flow teraman untuk third-party apps</li>
+                        <li><strong>Refresh tokens</strong> — token bisa di-refresh tanpa user login ulang</li>
+                        <li><strong>Client management</strong> — dashboard untuk manage OAuth clients</li>
+                        <li><strong>Scope system powerful</strong> — kontrol akses granular</li>
+                    </ul>
+
+                    <h3>Kekurangan Passport</h3>
+                    <ul>
+                        <li><strong>Setup berat</strong> — banyak migration, config, dan dependency</li>
+                        <li><strong>Overkill untuk kebanyakan project</strong> — 90% API gak butuh OAuth2 penuh</li>
+                        <li><strong>Performance overhead</strong> — lebih banyak database query per request</li>
+                        <li><strong>Complexity</strong> — OAuth2 itu protocol yang rumit, banyak edge case</li>
+                        <li><strong>Maintenance concern</strong> — beberapa developer merasa Passport kurang diminati Laravel team belakangan ini dibanding Sanctum</li>
+                    </ul>
+
+                    <h2 id="jwt-json-web-token">JWT (tymon/jwt-auth)</h2>
+                    <p><strong>JWT</strong> (JSON Web Token) adalah standar yang <em>bukan</em> bawaan Laravel — diimplementasikan lewat package <code>tymon/jwt-auth</code>. JWT bersifat <strong>stateless</strong>: token berisi semua informasi user, di-encode dan di-sign server-side, dan divalidasi tanpa perlu database lookup.</p>
+
+                    <pre><code>// Generate token
+$token = JWTAuth::attempt($credentials);
+
+// Menggunakan token
+$response = Http::withToken($token)
+    ->get('https://api.example.com/me');
+
+// Di middleware, JWT di-decode tanpa hit database:
+// 1. Ambil token dari header
+// 2. Verifikasi signature
+// 3. Decode payload
+// 4. Done — tidak ada database query</code></pre>
+
+                    <blockquote>
+                        <p><strong>Kapan pakai JWT?</strong> Microservices yang butuh stateless auth, mobile app dengan performa kritis, atau arsitektur di mana setiap service harus validasi token secara independen tanpa shared database.</p>
+                    </blockquote>
+
+                    <h3>Kelebihan JWT</h3>
+                    <ul>
+                        <li><strong>Stateless</strong> — tidak ada database query untuk validasi token</li>
+                        <li><strong>Performa tinggi</strong> — ideal untuk high-traffic API</li>
+                        <li><strong>Cross-service compatible</strong> — service lain bisa validasi token tanpa akses ke user database</li>
+                        <li><strong>Self-contained</strong> — token berisi semua info yang diperlukan</li>
+                    </ul>
+
+                    <h3>Kekurangan JWT</h3>
+                    <ul>
+                        <li><strong>Tidak bisa di-revoke dengan mudah</strong> — token valid sampai expired, kecuali pakai blacklist (yang bikin jadi stateful lagi)</li>
+                        <li><strong>Token size besar</strong> — dibanding simple API token, JWT payload bisa lumayan besar</li>
+                        <li><strong>Package third-party</strong> — bukan official Laravel package, kadang telat update</li>
+                        <li><strong>Security pitfalls</strong> — salah konfigurasi bisa berakibat fatal (weak secret, no rotation, dll)</li>
+                        <li><strong>Refresh token complexity</strong> — harus implement sendiri atau pakai library tambahan</li>
+                    </ul>
+
+                    <h2 id="perbandingan-head-to-head">Perbandingan Head-to-Head</h2>
+
+                    <h3>Setup Complexity</h3>
+                    <p><strong>Sanctum:</strong> ⭐ — Hampir zero-config. Install, migrate, publish config (optional), pakai.</p>
+                    <p><strong>JWT:</strong> ⭐⭐ — Config secret key, auth provider, middleware. Lumayan setup tapi masih manageable.</p>
+                    <p><strong>Passport:</strong> ⭐⭐⭐⭐ — Banyak migration, encryption keys, client setup, dan konfigurasi OAuth2.</p>
+
+                    <h3>Performance</h3>
+                    <p><strong>JWT:</strong> 🏆 — Stateless, tidak ada DB query. Cocok untuk high-traffic.</p>
+                    <p><strong>Sanctum:</strong> 🥈 — Token validasi via DB, tapi query-nya simpel dan bisa di-cache.</p>
+                    <p><strong>Passport:</strong> 🥉 — Paling banyak DB query per request (token + client validation).</p>
+
+                    <h3>Security</h3>
+                    <p><strong>Passport:</strong> 🏆 — OAuth2 standar industry, authorization code grant paling aman.</p>
+                    <p><strong>Sanctum:</strong> 🥈 — Cookie-based SPA auth secure untuk same-origin. Token auth good enough untuk kebanyakan case.</p>
+                    <p><strong>JWT:</strong> 🥉 — Secure kalau diimplementasi dengan benar. Tapi banyak developer yang salah konfigurasi.</p>
+
+                    <h3>Flexibility</h3>
+                    <p><strong>Passport:</strong> 🏆 — OAuth2 penuh, scope, refresh token, authorization code.</p>
+                    <p><strong>JWT:</strong> 🥈 — Stateless, cross-service, customizable payload.</p>
+                    <p><strong>Sanctum:</strong> 🥉 — Scope terbatas, tidak OAuth2 compliant, tapi cukup untuk kebanyakan case.</p>
+
+                    <h3>Maintenance & Future-proof</h3>
+                    <p><strong>Sanctum:</strong> 🏆 — Official Laravel package, selalu di-maintain bareng Laravel core.</p>
+                    <p><strong>Passport:</strong> 🥈 — Official package tapi ada tanda-tanda Laravel mendorong Sanctum untuk kebanyakan use case.</p>
+                    <p><strong>JWT:</strong> 🥉 — Third-party package, risiko telat update atau abandon.</p>
+
+                    <h2 id="decision-framework">Decision Framework: Pilih yang Mana?</h2>
+                    <p>Biar gak bingung, ini flowchart sederhana yang aku pakai:</p>
+
+                    <ol>
+                        <li><strong>Apakah kamu membangun API publik untuk developer pihak ketiga?</strong>
+                            <ul>
+                                <li>Ya → <strong>Passport</strong>. Kamu butuh OAuth2 yang sesungguhnya.</li>
+                                <li>Tidak → lanjut ke pertanyaan berikutnya.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Apakah arsitekturnya microservices tanpa shared database?</strong>
+                            <ul>
+                                <li>Ya → <strong>JWT</strong>. Stateless auth adalah keharusan.</li>
+                                <li>Tidak → lanjut ke pertanyaan berikutnya.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Apakah frontend-mu SPA yang di-serve dari domain yang sama?</strong>
+                            <ul>
+                                <li>Ya → <strong>Sanctum (SPA mode)</strong>. Ini use case paling idealnya.</li>
+                                <li>Tidak → <strong>Sanctum (token mode)</strong>.</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <blockquote>
+                        <p><strong>Intinya:</strong> Kalau kamu ragu, pake <strong>Sanctum</strong>. Itu default yang benar untuk 80% project. Passport dan JWT punya tempatnya masing-masing, tapi jangan dipakai "karena keren" — pakai karena memang dibutuhkan.</p>
+                    </blockquote>
+
+                    <h2 id="tips-dari-production">Tips dari Production</h2>
+
+                    <h3>1. Token Expiration Jangan Terlalu Lama</h3>
+                    <p>Sering lihat developer set token lifetime sampai 10 tahun "biar gak ribet." Jangan. Set 1-2 jam untuk access token, dan implement refresh token kalau dibutuhkan. Kalau pakai Sanctum token mode, set <code>expiration</code> di config.</p>
+
+                    <pre><code>// config/sanctum.php
+'expiration' => 120, // menit — 2 jam
+
+// Untuk SPA cookie auth
+'session_lifetime' => 120,</code></pre>
+
+                    <h3>2. Pakai Scope untuk API yang Bisa Diakses Publik</h3>
+                    <p>Kalau API-mu bisa diakses oleh third-party (sanctum token mode), gunakan scope untuk membatasi akses. Jangan kasih full access ke semua endpoint.</p>
+
+                    <pre><code>// Membuat token dengan scope terbatas
+$token = $user->createToken('partner-integration', ['orders:read', 'products:read']);
+
+// Di route
+Route::get('/orders', [OrderController::class, 'index'])
+    ->middleware(['auth:sanctum', 'scope:orders:read']);</code></pre>
+
+                    <h3>3. Logout = Revoke Token</h3>
+                    <p>Untuk Sanctum dan Passport, pastikan logout benar-benar menghapus atau revoke token. Token yang valid tapi tidak dipakai adalah security risk.</p>
+
+                    <pre><code>// Sanctum: revoke current token
+$request->user()->currentAccessToken()->delete();
+
+// Revoke semua token (force logout everywhere)
+$request->user()->tokens()->delete();</code></pre>
+
+                    <h3>4. Rate Limiting di Endpoint Auth</h3>
+                    <p>Endpoint login dan token refresh jadi target brute force. Selalu pakai rate limiting.</p>
+
+                    <pre><code>Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1'); // 5 request per menit</code></pre>
+
+                    <h3>5. Jangan Simpan Token di LocalStorage (SPA)</h3>
+                    <p>Kalau pakai Sanctum SPA mode, biar Laravel yang handle cookie-nya. Jangan simpan token di localStorage — rentan XSS. Sanctum SPA auth menggunakan cookie yang secure dan httpOnly secara default.</p>
+
+                    <h2 id="ketika-semuanya-salah">Ketika Semuanya "Salah"</h2>
+                    <p>Terkadang, jawabannya bukan ketiga opsi di atas. Beberapa skenario di mana kamu perlu alternatif:</p>
+
+                    <ul>
+                        <li><strong>SSO (Single Sign-On)</strong> — pakai Laravel Socialite + session management, bukan Sanctum/Passport/JWT.</li>
+                        <li><strong>API Gateway pattern</strong> — pakai API Gateway (Kong, Traefik) yang handle authentication, dan Laravel hanya validate downstream token.</li>
+                        <li><strong>Legacy system integration</strong> — kadang harus ikut standar yang sudah ada (Basic Auth, API Key, HMAC).</li>
+                        <li><strong>Real-time WebSocket auth</strong> — Sanctum bisa, tapi pertimbangkan juga Gateway-level auth untuk WebSocket connections.</li>
+                    </ul>
+
+                    <h2 id="kesimpulan">Kesimpulan</h2>
+                    <p>Setelah pakai ketiganya di berbagai project, ini rekomendasi praktis aku:</p>
+
+                    <ul>
+                        <li><strong>Default choice:</strong> <strong>Sanctum</strong> — simple, resmi, dan cukup untuk 80% kasus.</li>
+                        <li><strong>Public API platform:</strong> <strong>Passport</strong> — kalau kamu benar-benar butuh OAuth2.</li>
+                        <li><strong>Microservices / high-performance:</strong> <strong>JWT</strong> — tapi dengan resiko maintenance yang harus dipertimbangkan.</li>
+                    </ul>
+
+                    <p>Jangan pilih authentication package berdasarkan jumlah star di GitHub atau thread viral di Twitter. Pilih berdasarkan arsitektur project-mu, tim-mu, dan kemampuan maintenance-mu ke depan.</p>
+
+                    <p>Yang paling penting: <strong>implementasi yang benar dari package yang sederhana</strong> jauh lebih baik daripada <strong>implementasi yang buruk dari package yang canggih</strong>.</p>
+
+                    <p class="article-ending"><strong>TL;DR:</strong> Default ke Sanctum. Pakai Passport kalau butuh OAuth2 sesungguhnya. Pakai JWT kalau arsitekturnya microservices stateless. Dan apapun yang kamu pilih, pastikan implementasi security-nya benar — bukan cuma asal jalan.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="article-footer">
+            <div class="container">
+                <div class="author-bio">
+                    <div class="author-info">
+                        <h4>Victor Fendi</h4>
+                        <p>Software Engineer based in Kudus, Indonesia. Building clean, efficient, and scalable solutions.</p>
+                    </div>
+                    <div class="author-links">
+                        <a href="../index.html#contact">Contact</a>
+                        <a href="https://github.com/fendivictor" target="_blank" rel="noopener">GitHub</a>
+                        <a href="https://linkedin.com/in/fendivictor" target="_blank" rel="noopener">LinkedIn</a>
+                    </div>
+                </div>
+
+                <div class="article-navigation">
+                    <a href="../blog.html" class="btn btn-secondary">← Back to Blog</a>
+                    <a href="../index.html#contact" class="btn btn-primary">Get In Touch →</a>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Victor Fendi. Built with simplicity.</p>
+                <div class="footer-socials">
+                    <a href="https://github.com/fendivictor" target="_blank" rel="noopener" aria-label="GitHub"><i class="devicon-github-original"></i></a>
+                    <a href="https://www.linkedin.com/in/victor-noor-fendi-8559a9112/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="devicon-linkedin-plain"></i></a>
+                    <a href="https://twitter.com/fendivn" target="_blank" rel="noopener" aria-label="Twitter"><i data-lucide="twitter" class="footer-icon"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
